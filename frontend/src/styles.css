@@ -1,0 +1,49 @@
+/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+app-root {
+  display: block;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+:root {
+    /* Brand colors */
+    --primary-blue: #0056b3;
+    --dark-blue: #0a2540;
+    --accent-purple: #7c6ee6;
+  
+    /* Surfaces */
+    --card-background: #d9d9d9;
+    --input-background: #f8fafc;
+  
+    /* Actions */
+    --primary-button: #0969cf;
+  
+    /* Backgrounds */
+    --page-gradient: linear-gradient(
+      to right,
+      var(--primary-blue),
+      var(--dark-blue)
+    );
+  }
+
+  .mat-drawer-side {
+    border-right: none !important;
+    border-radius: 0 !important;
+  }
