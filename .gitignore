@@ -1,0 +1,6 @@
+# IntelliJ settings
+.idea/
+*.iml
+
+# macOS folder metadata
+.DS_Store
