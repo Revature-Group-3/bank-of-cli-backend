@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram name="Page-1" id="qtKT7uE7LYVj6GclN0Al">
-    <mxGraphModel dx="2657" dy="939" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3191" dy="1216" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -175,13 +175,10 @@
             <mxPoint x="110" y="305" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="233oCHKELaGCLD5nJPEE-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;" value="type: BANK_TRANSACTION_TYPE_ENUM" vertex="1">
-          <mxGeometry height="60" width="250" x="965" y="150" as="geometry" />
-        </mxCell>
-        <mxCell id="233oCHKELaGCLD5nJPEE-8" edge="1" parent="1" source="l2dxpFUoDwW1OAxdEkuN-2" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=1;entryDx=0;entryDy=0;exitX=1;exitY=0;exitDx=0;exitDy=0;" target="233oCHKELaGCLD5nJPEE-7" value="">
+        <mxCell id="233oCHKELaGCLD5nJPEE-8" edge="1" parent="1" source="l2dxpFUoDwW1OAxdEkuN-2" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=1;entryDx=0;entryDy=0;exitX=1;exitY=0;exitDx=0;exitDy=0;" target="RV0sFnmlzF62eZ20XUjE-5" value="">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1010" y="215" as="sourcePoint" />
-            <mxPoint x="1025" y="380" as="targetPoint" />
+            <mxPoint x="1001.611652" y="201.21320300000002" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="233oCHKELaGCLD5nJPEE-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;aspect=fixed;fillColor=none;strokeColor=none;resizable=0;perimeter=centerPerimeter;rotatable=0;allowArrows=0;points=[];outlineConnect=1;" value="" vertex="1">
@@ -260,6 +257,9 @@
             <mxPoint x="880" y="310" as="sourcePoint" />
             <mxPoint x="780" y="290" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="RV0sFnmlzF62eZ20XUjE-5" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;" value="type: {`deposit`, `withdrawal`, `transfer`}" vertex="1">
+          <mxGeometry height="60" width="190" x="970" y="150" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
