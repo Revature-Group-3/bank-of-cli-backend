@@ -1,8 +1,6 @@
 {
-    "id": 51,
-    "username": "username",
+    "email": "example@email.com",
     "firstName": "firstName",
     "lastName": "lastName",
-    "balance": 51,
-    "password": "password"
+    "balanceInCents": 51
 }

@@ -1,7 +1,7 @@
 {
     "id": 51,
-    "accountId": 51,
+    "accountEmail": "example@email.com",
     "type": "DEPOSIT",
-    "amount": 51,
+    "amountInCents": 51,
     "timestamp": "2024-06-01T00:00:00Z"
 }

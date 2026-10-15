@@ -1,5 +1,5 @@
 {
-    "senderAccountId": 51,
-    "recipientAccountId": 52,
-    "amount": 51
+    "senderAccountEmail": "example@email.com",
+    "recipientAccountEmail": "another.example@email.com",
+    "amountInCents": 51
 }
