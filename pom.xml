@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.revature</groupId>
-	<artifactId>bank-of-cli-api</artifactId>
+	<artifactId>bank-of-cli-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>bank-of-cli-api</name>
+	<name>bank-of-cli-backend</name>
 	<description/>
 	<url/>
 	<licenses>
