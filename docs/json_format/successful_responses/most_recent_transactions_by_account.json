@@ -4,14 +4,14 @@
             "id": 53,
             "accountId": 51,
             "type": "DEPOSIT",
-            "amount": 51,
+            "amountInCents": 51,
             "timestamp": "2024-06-01T00:00:00Z"
         },
         {
             "id": 52,
             "accountId": 51,
             "type": "WITHDRAWAL",
-            "amount": 51,
+            "amountInCents": 51,
             "timestamp": "2024-06-01T00:00:00Z"
         },
         {
@@ -19,7 +19,7 @@
             "senderAccountId": 51,
             "recipientAccountId": 52,
             "type": "TRANSFER",
-            "amount": 51,
+            "amountInCents": 51,
             "timestamp": "2024-06-01T00:00:00Z"
         }
     ]

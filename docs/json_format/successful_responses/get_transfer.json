@@ -3,6 +3,6 @@
     "senderAccountId": 51,
     "recipientAccountId": 52,
     "type": "TRANSFER",
-    "amount": 51,
+    "amountInCents": 51,
     "timestamp": "2024-06-01T00:00:00Z"
 }
