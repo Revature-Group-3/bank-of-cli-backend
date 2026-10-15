@@ -2,22 +2,22 @@
     "transactions": [
         {
             "id": 53,
-            "accountId": 51,
+            "accountEmail": "example@email.com",
             "type": "DEPOSIT",
             "amountInCents": 51,
             "timestamp": "2024-06-01T00:00:00Z"
         },
         {
             "id": 52,
-            "accountId": 51,
+            "accountEmail": "example@email.com",
             "type": "WITHDRAWAL",
             "amountInCents": 51,
             "timestamp": "2024-06-01T00:00:00Z"
         },
         {
             "id": 51,
-            "senderAccountId": 51,
-            "recipientAccountId": 52,
+            "senderAccountEmail": "example@email.com",
+            "recipientAccountEmail": "another.example@email.com",
             "type": "TRANSFER",
             "amountInCents": 51,
             "timestamp": "2024-06-01T00:00:00Z"
