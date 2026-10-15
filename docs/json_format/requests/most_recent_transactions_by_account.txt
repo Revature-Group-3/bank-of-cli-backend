@@ -1,1 +1,1 @@
-?accountId=51
+?accountEmail=example%40email.com
