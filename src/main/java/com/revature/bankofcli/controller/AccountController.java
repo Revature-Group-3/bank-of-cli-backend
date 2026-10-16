@@ -25,7 +25,12 @@ public class AccountController {
 
     @PostMapping 
     public ResponseEntity<AccountResponse> register (@Valid @RequestBody RegisterAccountRequest request) {
-            //TO:DO, registration to Account Service
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+            AccountResponse response = new AccountResponse(
+            request.getEmail(),
+            request.getFirstName(),
+            request.getLastName(),
+            0L
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }
 }
