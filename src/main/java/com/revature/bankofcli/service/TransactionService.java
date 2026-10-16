@@ -13,6 +13,10 @@ import com.revature.bankofcli.repository.AccountRepository;
 import com.revature.bankofcli.repository.BankTransactionRepository;
 
 import com.revature.bankofcli.exception.AccountNotFoundException;
+import com.revature.bankofcli.exception.AmountExceedsLimitException;
+import com.revature.bankofcli.exception.InsufficientFundsException;
+import com.revature.bankofcli.exception.InvalidAmountException;
+import com.revature.bankofcli.exception.SelfTransferException;
 
 
 
@@ -59,11 +63,11 @@ public class TransactionService {
         // 2.Business rules
         // error code 400
         if (amountInCents <= 0){
-            throw new IllegalArgumentException("The transaction amount must be greater than zero.");
+            throw new InvalidAmountException();
         }
         // error code 400
         if (amountInCents > 1_000_000){ //$10,000 in cents
-            throw new IllegalArgumentException("The deposit/transfer amount exceeds the maximum allowed limit of $10,000.");
+            throw new AmountExceedsLimitException("The deposit amount exceeds the maximum allowed limit of $10,000.");
         }
         // 3.Update Account's Balance
         account.setBalanceInCents(account.getBalanceInCents() + amountInCents);
@@ -87,16 +91,16 @@ public class TransactionService {
         // logic/business rules / check
         // error code 400
         if (amountInCents <= 0){
-            throw new IllegalArgumentException("The transaction amount must be greater than zero.");
+            throw new InvalidAmountException();
         }
         // error code 400
         if (amountInCents > 1_000_000){
-            throw new IllegalArgumentException("The deposit/transfer amount exceeds the maximum allowed limit of $10,000.");
+            throw new AmountExceedsLimitException("The withdrawal amount exceeds the maximum allowed limit of $10,000.");
         }
         // Check if amount is greater than what you currently have.
         // error code 400
         if (amountInCents > account.getBalanceInCents() ){
-            throw new IllegalArgumentException("Insufficient funds. The withdrawal/transfer amount exceeds your available balance.");
+            throw new InsufficientFundsException("Insufficient funds. The withdrawal amount exceeds your available balance.");
 
         }
 
@@ -121,7 +125,7 @@ public class TransactionService {
         // Base Check
         // error code 400
         if (accountSenderEmail.equals(accountRecipientEmail)){
-            throw new IllegalArgumentException("You cannot transfer funds to your own account.");
+            throw new SelfTransferException();
         }
 
         // Gather accounts : from and to
@@ -137,15 +141,15 @@ public class TransactionService {
         // Additional Checks
         // error code 400
         if (amountInCents <= 0){
-            throw new IllegalArgumentException("The transaction amount must be greater than zero.");
+            throw new InvalidAmountException();
         }
         // error code 400
         if (amountInCents > 1_000_000){
-            throw new IllegalArgumentException("The deposit/transfer amount exceeds the maximum allowed limit of $10,000.");
+            throw new AmountExceedsLimitException("The transfer amount exceeds the maximum allowed limit of $10,000.");
         }
         // error code 400
         if (amountInCents > accountSender.getBalanceInCents() ){
-            throw new IllegalArgumentException("Insufficient funds. The withdrawal/transfer amount exceeds your available balance.");
+            throw new InsufficientFundsException("Insufficient funds. The transfer amount exceeds your available balance.");
         }
         // Set new balance
         accountSender.setBalanceInCents(accountSender.getBalanceInCents() -  amountInCents);
