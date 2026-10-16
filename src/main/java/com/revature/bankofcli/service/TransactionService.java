@@ -12,6 +12,10 @@ import com.revature.bankofcli.domain.Withdrawal;
 import com.revature.bankofcli.repository.AccountRepository;
 import com.revature.bankofcli.repository.BankTransactionRepository;
 
+import com.revature.bankofcli.exception.AccountNotFoundException;
+
+import java.math.BigInteger;
+
 
 @Service 
 public class TransactionService {
@@ -47,11 +51,11 @@ public class TransactionService {
      * Similar to part 1 of BANKOFCLI, its just Spring does it for you now.
      */
     @Transactional 
-    public Deposit deposit(long accountId, long amountInCents, String memo){
+    public Deposit deposit(long accountEmail, long amountInCents, String memo){
 
         // 1. Load account, or fail if it doesnt exist
-        Account account = accountRepository.findById(accountId)
-                            .orElseThrow(() -> new IllegalArgumentException("Account not found."));
+        Account account = accountRepository.findById(accountEmail)
+                            .orElseThrow(() -> new AccountNotFoundException("Account not found."));
 
         // 2.Business rules
         if (amountInCents <= 0){
@@ -73,12 +77,12 @@ public class TransactionService {
 
     // Withdraw
     @Transactional 
-    public Withdrawal withdrawal(long accountId, long amountInCents, String memo){
+    public Withdrawal withdraw(String accountEmail, long amountInCents, String memo){
 
         // TODO
         // setup data
-        Account account = accountRepository.findById(accountId)
-                            .orElseThrow(() -> new IllegalArgumentException("Account could not be found. No Withdrawals available at this time."));
+        Account account = accountRepository.findByEmail(accountEmail)
+                            .orElseThrow(() -> new AccountNotFoundException("Account could not be found. No Withdrawals available at this time."));
 
         // logic/business rules / check
         if (amountInCents <= 0){
@@ -109,18 +113,18 @@ public class TransactionService {
 
     // Transfer Transfer(Account senderAccount, Account recipientAccount,  OffsetDateTime timestamp, long amountInCents, String memo)
     @Transactional 
-    public Transfer transfer(long accountSenderId, long accountRecipientId, long amountInCents, String memo ){
+    public Transfer transfer(String accountSenderEmail, String accountRecipientEmail, long amountInCents, String memo ){
 
         // Base Check
-        if (accountSenderId == accountRecipientId){
+        if (accountSenderEmail.equals(accountRecipientEmail)){
             throw new IllegalArgumentException("Cant transfer funds to yourself.");
         }
 
         // Gather accounts : from and to
-        Account accountSender = accountRepository.findById(accountSenderId)
-                                .orElseThrow(() -> new IllegalArgumentException("Could not find sender account."));
-        Account accountRecipient = accountRepository.findById(accountRecipientId)
-                                    .orElseThrow(()-> new IllegalArgumentException("Could not find recipient account."));
+        Account accountSender = accountRepository.findByEmail(accountSenderEmail)
+                                .orElseThrow(() -> new AccountNotFoundException("Could not find sender account."));
+        Account accountRecipient = accountRepository.findByEmail(accountRecipientEmail)
+                                    .orElseThrow(()-> new AccountNotFoundException("Could not find recipient account."));
 
 
         // Business logic / checks
