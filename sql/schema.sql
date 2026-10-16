@@ -4,16 +4,16 @@ CREATE EXTENSION IF NOT EXISTS citext;
 CREATE TABLE account(
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email CITEXT UNIQUE NOT NULL                        -- For the purposes of this project, service layer will verify if this is a valid email
-        CHECK(length(email) > 0),
+        CHECK(length(btrim(email)) > 0),
     first_name TEXT NOT NULL
-        CHECK(length(first_name) > 0),
+        CHECK(length(btrim(first_name)) > 0),
     last_name TEXT NOT NULL
-        CHECK(length(last_name) > 0),
+        CHECK(length(btrim(last_name)) > 0),
     password TEXT NOT NULL                              -- Account will store encoded password, not plain-text password
         CHECK(length(password) > 0),
-    balance_in_cents: BIGINT NOT NULL DEFAULT 0         -- Account balance will be 0 by default and can't go negative
+    balance_in_cents BIGINT NOT NULL DEFAULT 0          -- Account balance will be 0 by default and can't go negative
         CHECK(balance_in_cents >= 0) 
-)
+);
 
 -- Create BANK_TRANSACTION table
 CREATE TABLE bank_transaction (
@@ -44,8 +44,7 @@ CREATE TABLE bank_transaction (
             account_id IS NOT NULL AND
             sender_account_id IS NULL AND
             recipient_account_id IS NULL
-        )
-        OR
+        ) OR
 
         -- Transfer
         (
@@ -60,30 +59,29 @@ CREATE TABLE bank_transaction (
     -- Ignored for non-transfers
     CONSTRAINT sender_account_id_and_recipient_account_id_not_equal CHECK (
         -- Non-transfers
-        type <> 'transfer'
-        OR
+        type <> 'transfer' OR
 
         -- Transfer
-        type = 'transfer' AND
         sender_account_id <> recipient_account_id
-    )
+    ),
 
     -- Ensures that deposit and transfer amounts do not exceed limit of $10,000
-    CONSTRAINT deposit_or_transfer_amount_below_max_limit CHECK (
+    CONSTRAINT deposit_or_transfer_amount_at_most_max_limit CHECK (
         -- Not deposit/transfer
-        type NOT IN ('deposit', 'transfer')
-        OR
+        type NOT IN ('deposit', 'transfer') OR
 
         -- Deposit/transfer
-        type IN ('deposit', 'transfer')
-        amount <= 1000000
+        amount_in_cents <= 1000000
     )
 );
 
 -- Optimize BANK_TRANSACTION lookups by:
 CREATE INDEX bank_transaction_account_id_idx            -- Account ID
-ON bank_transaction(account_id);
+ON bank_transaction(account_id)
+WHERE account_id IS NOT NULL;
 CREATE INDEX bank_transaction_sender_account_id_idx     -- Sender account ID
-ON bank_transaction(sender_account_id);
+ON bank_transaction(sender_account_id)
+WHERE sender_account_id IS NOT NULL;
 CREATE INDEX bank_transaction_recipient_account_id_idx  -- Recipient account ID
-ON bank_transaction(recipient_account_id);
+ON bank_transaction(recipient_account_id)
+WHERE recipient_account_id IS NOT NULL;
