@@ -29,35 +29,36 @@ CREATE TABLE bank_transaction (
 
     -- Account ID foreign keys are to be NULL or NOT NULL depending on bank transaction type
     -- Additionally, for the purposes of this project, we block attempts to delete accounts associated with this bank transaction
-    account_id BIGINT REFERENCES account(id)            -- Account ID column for deposits and withdrawals
+    sender_account_id BIGINT REFERENCES account(id)     -- Sender account ID column for transfers, account ID column for withdrawals
         ON DELETE RESTRICT,
-    sender_account_id BIGINT REFERENCES account(id)     -- Sender account ID column for transfers
-        ON DELETE RESTRICT,
-    recipient_account_id BIGINT REFERENCES account(id)  -- Recipient account ID column for transfers
+    recipient_account_id BIGINT REFERENCES account(id)  -- Recipient account ID column for transfers, account ID column for deposits
         ON DELETE RESTRICT,
 
     -- Ensures that account ID foreign keys are NULLed / NOT NULLed properly according to bank transaction type
     CONSTRAINT account_id_foreign_keys_match_type CHECK (
-        -- Deposit/withdrawal
-        (
-            type IN ('deposit', 'withdrawal') AND
-            account_id IS NOT NULL AND
-            sender_account_id IS NULL AND
-            recipient_account_id IS NULL
-        ) OR
+        CASE
+            -- Deposit
+            WHEN type='deposit'
+                THEN sender_account_id IS NULL
+                AND recipient_account_id IS NOT NULL
 
-        -- Transfer
-        (
-            type IN ('transfer') AND
-            account_id IS NULL AND
-            sender_account_id IS NOT NULL AND
-            recipient_account_id IS NOT NULL
-        )
+            -- Withdrawal
+            WHEN type='withdrawal'
+                THEN sender_account_id IS NOT NULL
+                AND recipient_account_id IS NULL
+
+            -- Transfer
+            WHEN type='transfer'
+                THEN sender_account_id IS NOT NULL
+                AND recipient_account_id IS NOT NULL
+            
+            ELSE FALSE
+        END
     ),
 
     -- Ensures that sender and recipient account IDs are not equal for transfers
     -- Ignored for non-transfers
-    CONSTRAINT sender_account_id_and_recipient_account_id_not_equal CHECK (
+    CONSTRAINT sender_account_id_and_recipient_account_id_not_equal_for_transfers CHECK (
         -- Non-transfers
         type <> 'transfer' OR
 
@@ -76,9 +77,6 @@ CREATE TABLE bank_transaction (
 );
 
 -- Optimize BANK_TRANSACTION lookups by:
-CREATE INDEX bank_transaction_account_id_idx            -- Account ID
-ON bank_transaction(account_id)
-WHERE account_id IS NOT NULL;
 CREATE INDEX bank_transaction_sender_account_id_idx     -- Sender account ID
 ON bank_transaction(sender_account_id)
 WHERE sender_account_id IS NOT NULL;
