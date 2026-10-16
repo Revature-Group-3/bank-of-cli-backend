@@ -13,8 +13,11 @@ import com.revature.bankofcli.repository.AccountRepository;
 import com.revature.bankofcli.repository.BankTransactionRepository;
 
 import com.revature.bankofcli.exception.AccountNotFoundException;
+import com.revature.bankofcli.exception.AmountExceedsLimitException;
+import com.revature.bankofcli.exception.InsufficientFundsException;
+import com.revature.bankofcli.exception.InvalidAmountException;
+import com.revature.bankofcli.exception.SelfTransferException;
 
-import java.math.BigInteger;
 
 
 @Service 
@@ -51,18 +54,20 @@ public class TransactionService {
      * Similar to part 1 of BANKOFCLI, its just Spring does it for you now.
      */
     @Transactional 
-    public Deposit deposit(long accountEmail, long amountInCents, String memo){
+    public Deposit deposit(String accountEmail, long amountInCents, String memo){
 
         // 1. Load account, or fail if it doesnt exist
-        Account account = accountRepository.findById(accountEmail)
+        Account account = accountRepository.findByEmail(accountEmail)
                             .orElseThrow(() -> new AccountNotFoundException("Account not found."));
 
         // 2.Business rules
+        // error code 400
         if (amountInCents <= 0){
-            throw new IllegalArgumentException("The transaction amount must be greater than 0.");
+            throw new InvalidAmountException();
         }
+        // error code 400
         if (amountInCents > 1_000_000){ //$10,000 in cents
-            throw new IllegalArgumentException("The deposit amount exceeds the maximum allowed limit of $10,000.");
+            throw new AmountExceedsLimitException("The deposit amount exceeds the maximum allowed limit of $10,000.");
         }
         // 3.Update Account's Balance
         account.setBalanceInCents(account.getBalanceInCents() + amountInCents);
@@ -79,21 +84,23 @@ public class TransactionService {
     @Transactional 
     public Withdrawal withdraw(String accountEmail, long amountInCents, String memo){
 
-        // TODO
         // setup data
         Account account = accountRepository.findByEmail(accountEmail)
                             .orElseThrow(() -> new AccountNotFoundException("Account could not be found. No Withdrawals available at this time."));
 
         // logic/business rules / check
+        // error code 400
         if (amountInCents <= 0){
-            throw new IllegalArgumentException("Amount must be greater than 0");
+            throw new InvalidAmountException();
         }
+        // error code 400
         if (amountInCents > 1_000_000){
-            throw new IllegalArgumentException("Amount exceeds $10,000.");
+            throw new AmountExceedsLimitException("The withdrawal amount exceeds the maximum allowed limit of $10,000.");
         }
         // Check if amount is greater than what you currently have.
+        // error code 400
         if (amountInCents > account.getBalanceInCents() ){
-            throw new IllegalArgumentException("Amount is greater than current balance.");
+            throw new InsufficientFundsException("Insufficient funds. The withdrawal amount exceeds your available balance.");
 
         }
 
@@ -116,28 +123,33 @@ public class TransactionService {
     public Transfer transfer(String accountSenderEmail, String accountRecipientEmail, long amountInCents, String memo ){
 
         // Base Check
+        // error code 400
         if (accountSenderEmail.equals(accountRecipientEmail)){
-            throw new IllegalArgumentException("Cant transfer funds to yourself.");
+            throw new SelfTransferException();
         }
 
         // Gather accounts : from and to
         Account accountSender = accountRepository.findByEmail(accountSenderEmail)
                                 .orElseThrow(() -> new AccountNotFoundException("Could not find sender account."));
+        // Error Code 404
         Account accountRecipient = accountRepository.findByEmail(accountRecipientEmail)
-                                    .orElseThrow(()-> new AccountNotFoundException("Could not find recipient account."));
+                                    .orElseThrow(()-> new AccountNotFoundException("The recipient account could not be found."));
 
 
         // Business logic / checks
 
         // Additional Checks
+        // error code 400
         if (amountInCents <= 0){
-            throw new IllegalArgumentException("Amount cannot be less than 0.");
+            throw new InvalidAmountException();
         }
+        // error code 400
         if (amountInCents > 1_000_000){
-            throw new IllegalArgumentException("Amount is greater than $10,000.");
+            throw new AmountExceedsLimitException("The transfer amount exceeds the maximum allowed limit of $10,000.");
         }
+        // error code 400
         if (amountInCents > accountSender.getBalanceInCents() ){
-            throw new IllegalArgumentException("Amount is greater than your current balance.");
+            throw new InsufficientFundsException("Insufficient funds. The transfer amount exceeds your available balance.");
         }
         // Set new balance
         accountSender.setBalanceInCents(accountSender.getBalanceInCents() -  amountInCents);
