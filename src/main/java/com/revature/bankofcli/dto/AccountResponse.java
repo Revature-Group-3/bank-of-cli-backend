@@ -1,4 +1,4 @@
-package com.revature.bankofcli.api.dto;
+package com.revature.bankofcli.dto;
 
 public class AccountResponse {
     private final String email;

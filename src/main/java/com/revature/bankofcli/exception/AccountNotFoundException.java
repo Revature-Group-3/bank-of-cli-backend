@@ -1,21 +1,15 @@
 package com.revature.bankofcli.exception;
 
-public class AccountNotFoundException extends RuntimeException{
+import org.springframework.http.HttpStatus;
+
+public class AccountNotFoundException extends ApiException{
+
+    public AccountNotFoundException(){
+        super(HttpStatus.NOT_FOUND, "Account could not be found.");
+    }
 
     public AccountNotFoundException(String message){
-        super(message);
+        super(HttpStatus.NOT_FOUND, message);
     }
-
-    public AccountNotFoundException(Throwable cause){
-        super(cause);
-    }
-
-    // Has to be in specific order to match the RuntimeException parameters
-    public AccountNotFoundException( String message, Throwable cause ){
-        super(message, cause);
-
-    }
-
-
 
 }
