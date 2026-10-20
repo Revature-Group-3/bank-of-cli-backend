@@ -7,6 +7,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "account")
@@ -17,30 +20,34 @@ public class Account {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Email 
+    @Email @NotBlank
     @Column (name = "email", unique = true)
     private String email;
 
+    @NotBlank
     @Column (name = "first_name")
     private String firstName;
 
+    @NotBlank
     @Column (name = "last_name")
     private String lastName;
 
+    @NotBlank
     @Column (name = "password")
     private String password;
 
+    @PositiveOrZero @NotNull
     @Column (name = "balance_in_cents")
     private long balanceInCents;
 
     protected Account(){}
 
-    public Account( String email, String firstName,String lastName,String password, long balanceInCents){
+    public Account(String email, String firstName, String lastName, String password) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
-        this.balanceInCents = balanceInCents;
+        this.balanceInCents = 0;
     }
 
     public long getId() {
@@ -67,7 +74,6 @@ public class Account {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    // Might be worth flagging
     public String getPassword() {
         return password;
     }
