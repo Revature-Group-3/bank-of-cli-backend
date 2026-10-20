@@ -1,9 +1,9 @@
-package com.revature.bankofcli.dto;
+package com.revature.bankofcli.dto.transaction;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public class DepositRequest {
+public class WithdrawRequest {
     @NotNull(message = "Please enter an amount.")
     @Positive(message = "Please enter a valid amount.")
     private Long amountInCents;
