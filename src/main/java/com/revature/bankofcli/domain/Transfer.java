@@ -1,15 +1,11 @@
 package com.revature.bankofcli.domain;
 
-import java.time.OffsetDateTime;
-
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 
 @Entity
-@Table (name = "transfer")
 @DiscriminatorValue ("transfer")
 public class Transfer extends BankTransaction{
 
@@ -32,10 +28,10 @@ public class Transfer extends BankTransaction{
     /**
      *  Why not a primitive?: right. With just a long accountId,
      *  you’d have to look up the account yourself every time. With an Account object, JPA does that for you.
-     * @param account
+     *  @param account
      */
-    public Transfer(Account senderAccount, Account recipientAccount,  OffsetDateTime timestamp, long amountInCents, String memo){
-        super(timestamp, amountInCents, memo);
+    public Transfer(Account senderAccount, Account recipientAccount, long amountInCents, String memo){
+        super(amountInCents, memo);
         this.senderAccount = senderAccount;
         this.recipientAccount = recipientAccount;
     }
