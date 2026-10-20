@@ -77,7 +77,7 @@ public class TransactionService {
         account.setBalanceInCents(account.getBalanceInCents() + amountInCents);
 
         // 4.Create a transaction (Deposit)
-        Deposit deposit = new Deposit(account, OffsetDateTime.now(), amountInCents, memo);
+        Deposit deposit = new Deposit(account, amountInCents, memo);
 
         // 5.Save and return
         return bankTransactionRepository.save(deposit);
@@ -116,7 +116,7 @@ public class TransactionService {
         // Create withdrawl
         // Syntax: (Account account, OffsetDateTime timestamp, long amountInCents,
         // String memo )
-        Withdrawal withdraw = new Withdrawal(account, OffsetDateTime.now(), amountInCents, memo);
+        Withdrawal withdraw = new Withdrawal(account, amountInCents, memo);
 
         // persist to transactions
         return bankTransactionRepository.save(withdraw);
@@ -162,7 +162,7 @@ public class TransactionService {
         accountRecipient.setBalanceInCents(accountRecipient.getBalanceInCents() + amountInCents);
 
         // Create transfer
-        Transfer transfer = new Transfer(accountSender, accountRecipient, OffsetDateTime.now(), amountInCents, memo);
+        Transfer transfer = new Transfer(accountSender, accountRecipient, amountInCents, memo);
 
         // Persist to database
         return bankTransactionRepository.save(transfer);
