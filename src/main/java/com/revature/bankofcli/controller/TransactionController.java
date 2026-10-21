@@ -13,7 +13,7 @@ import com.revature.bankofcli.dto.transaction.DepositRequest;
 import com.revature.bankofcli.dto.transaction.TransactionHistoryResponse;
 import com.revature.bankofcli.dto.transaction.TransactionResponse;
 import com.revature.bankofcli.dto.transaction.TransferRequest;
-import com.revature.bankofcli.dto.transaction.WithdrawalRequest;
+import com.revature.bankofcli.dto.transaction.WithdrawRequest;
 
 import jakarta.validation.Valid;
 
@@ -32,7 +32,7 @@ public class TransactionController {
     }
 
     @PostMapping("/accounts/me/withdraw")
-    public ResponseEntity<TransactionResponse> withdraw(@Valid @RequestBody WithdrawalRequest request) {
+    public ResponseEntity<TransactionResponse> withdraw(@Valid @RequestBody WithdrawRequest request) {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
