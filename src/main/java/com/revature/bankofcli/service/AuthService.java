@@ -48,8 +48,7 @@ public class AuthService {
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
         // Create the account
-        Account account = new Account(request.getEmail(), request.getFirstName(), request.getLastName(), hashedPassword,
-                0L);
+        Account account = new Account(request.getEmail(), request.getFirstName(), request.getLastName(), hashedPassword);
 
         // Always set new account's role to USER.
         // account.setRole(Role.USER);
@@ -59,7 +58,7 @@ public class AuthService {
 
         // Return a safe account without returning the hash.
         return new AccountResponse(savedAccount.getEmail(), savedAccount.getFirstName(), savedAccount.getLastName(),
-                0L);
+                savedAccount.getBalanceInCents());
     }
 
 }
