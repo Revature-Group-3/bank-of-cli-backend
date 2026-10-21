@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -46,9 +47,27 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "An internal error occurred. Please try again later.");
     }
 
+    // Handle @Valid exceptions
+    @ExceptionHandler (MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationExceptions(MethodArgumentNotValidException ex){
+
+        if (ex.getBindingResult().getFieldError() != null){
+            String message = ex.getBindingResult()  // The "report card" from @Valid: every rule that failed on DTO 
+                .getFieldError()                    // the first failure tied to a specific field (e.g. password), or null if none
+                .getDefaultMessage();               // that failure's message = the message = "..." from your annotation
+
+            return  build( HttpStatus.BAD_REQUEST , message);
+        }else{
+            // 400 Bad Request - Specific error for the case that Validation fails(@Valid)
+            return build(HttpStatus.BAD_REQUEST, "Invalid request.");
+        }
+        
+    }
+
     // The contract’s format is "2024-06-01T00:00:00Z", so this cuts it to whole seconds
     private ResponseEntity<ApiError> build(HttpStatusCode status, String message) {
         String timestamp = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString();
         return ResponseEntity.status(status).body(new ApiError(status.value(), message, timestamp));
     }
+
 }
