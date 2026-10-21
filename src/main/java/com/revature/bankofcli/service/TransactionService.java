@@ -2,6 +2,10 @@ package com.revature.bankofcli.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.revature.bankofcli.dto.transaction.DepositRequest;
+import com.revature.bankofcli.dto.transaction.WithdrawRequest;
+import com.revature.bankofcli.dto.transaction.TransferRequest;
+import com.revature.bankofcli.dto.transaction.AbstractTransactionRequest;
 
 import java.util.List;
 
@@ -56,50 +60,31 @@ public class TransactionService {
      *                you now.
      */
     @Transactional
-    public Deposit deposit(String accountEmail, long amountInCents, String memo) {
+    public Deposit deposit(DepositRequest request) {
+        Account account = transactionSetup(request);
 
-        // 1. Load account, or fail if it doesnt exist
-        Account account = accountRepository.findByEmail(accountEmail)
-                .orElseThrow(() -> new AccountNotFoundException("Account not found."));
+        long amountInCents = request.getAmountInCents();
+        String memo = request.getMemo();
 
-        // 2.Business rules
-        // error code 400
-        if (amountInCents <= 0) {
-            throw new InvalidAmountException();
-        }
-        // error code 400
-        if (amountInCents > 1_000_000) { // $10,000 in cents
-            throw new AmountExceedsLimitException("The deposit amount exceeds the maximum allowed limit of $10,000.");
-        }
-        // 3.Update Account's Balance
+        // Update Account's Balance
         account.setBalanceInCents(account.getBalanceInCents() + amountInCents);
 
-        // 4.Create a transaction (Deposit)
+        // Create a transaction (Deposit)
         Deposit deposit = new Deposit(account, amountInCents, memo);
 
-        // 5.Save and return
+        // Save and return
         return bankTransactionRepository.save(deposit);
     }
 
     // Withdraw
     @Transactional
-    public Withdrawal withdraw(String accountEmail, long amountInCents, String memo) {
+    public Withdrawal withdraw(WithdrawRequest request) {
 
-        // setup data
-        Account account = accountRepository.findByEmail(accountEmail)
-                .orElseThrow(() -> new AccountNotFoundException(
-                        "Account could not be found. No Withdrawals available at this time."));
+        Account account = transactionSetup(request);
 
-        // logic/business rules / check
-        // error code 400
-        if (amountInCents <= 0) {
-            throw new InvalidAmountException();
-        }
-        // error code 400
-        if (amountInCents > 1_000_000) {
-            throw new AmountExceedsLimitException(
-                    "The withdrawal amount exceeds the maximum allowed limit of $10,000.");
-        }
+        long amountInCents = request.getAmountInCents();
+        String memo = request.getMemo();
+
         // Check if amount is greater than what you currently have.
         // error code 400
         if (amountInCents > account.getBalanceInCents()) {
@@ -111,7 +96,7 @@ public class TransactionService {
         // Set new balance
         account.setBalanceInCents(account.getBalanceInCents() - amountInCents);
 
-        // Create withdrawl
+        // Create withdrawal
         // Syntax: (Account account, OffsetDateTime timestamp, long amountInCents,
         // String memo )
         Withdrawal withdraw = new Withdrawal(account, amountInCents, memo);
@@ -124,19 +109,24 @@ public class TransactionService {
     // Transfer Transfer(Account senderAccount, Account recipientAccount,
     // OffsetDateTime timestamp, long amountInCents, String memo)
     @Transactional
-    public Transfer transfer(String accountSenderEmail, String accountRecipientEmail, long amountInCents, String memo) {
+    public Transfer transfer(TransferRequest request) {
+
+        transactionSetup(request);
+
+        long amountInCents = request.getAmountInCents();
+        String memo = request.getMemo();
 
         // Base Check
         // error code 400
-        if (accountSenderEmail.equals(accountRecipientEmail)) {
+        if (request.getAccountId().equals(request.getRecipientAccountId())) {
             throw new SelfTransferException();
         }
 
         // Gather accounts : from and to
-        Account accountSender = accountRepository.findByEmail(accountSenderEmail)
+        Account accountSender = accountRepository.findById(request.getAccountId())
                 .orElseThrow(() -> new AccountNotFoundException("Could not find sender account."));
         // Error Code 404
-        Account accountRecipient = accountRepository.findByEmail(accountRecipientEmail)
+        Account accountRecipient = accountRepository.findById(request.getRecipientAccountId())
                 .orElseThrow(() -> new AccountNotFoundException("The recipient account could not be found."));
 
         // Business logic / checks
@@ -171,6 +161,27 @@ public class TransactionService {
     public List<BankTransaction> getTransactionHistory(Long accountId) {
         // Should be allowed to be null
         return bankTransactionRepository.findTransactionHistory(accountId);
+    }
+
+    // Helper functions
+    private Account transactionSetup(AbstractTransactionRequest transactionRequest) {
+        // Does the basic setup validation common to all types of transactions
+
+        // Load account, or fail if it doesn't exist
+        Account account = accountRepository.findById(transactionRequest.getAccountId())
+                .orElseThrow(() -> new AccountNotFoundException("Could not find account."));
+
+        // Business rules
+        // Error code 400
+        if (transactionRequest.getAmountInCents() <= 0) {
+            throw new InvalidAmountException();
+        }
+        // Error code 400
+        if (transactionRequest.getAmountInCents() > 1_000_000) {
+            throw new AmountExceedsLimitException("The amount exceeds the maximum allowed limit of $10,000.");
+        }
+
+        return account;
     }
 
 }
