@@ -3,7 +3,7 @@ package com.revature.bankofcli.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.revature.bankofcli.dto.transaction.DepositRequest;
-import com.revature.bankofcli.dto.transaction.WithdrawRequest;
+import com.revature.bankofcli.dto.transaction.WithdrawalRequest;
 import com.revature.bankofcli.dto.transaction.TransferRequest;
 import com.revature.bankofcli.dto.transaction.AbstractTransactionRequest;
 
@@ -78,7 +78,7 @@ public class TransactionService {
 
     // Withdraw
     @Transactional
-    public Withdrawal withdraw(Long accountId, WithdrawRequest request) {
+    public Withdrawal withdraw(Long accountId, WithdrawalRequest request) {
 
         Account account = transactionSetup(request);
 
