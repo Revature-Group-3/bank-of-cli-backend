@@ -3,11 +3,22 @@ package com.revature.bankofcli.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Lock;
 
 import com.revature.bankofcli.domain.Account;
 
-@Repository 
-public interface AccountRepository extends JpaRepository< Account, Long>{ //autoboxing will convert long(private long id in Account field) to Long 
-    public Optional<Account> findByEmail(String email);
+import jakarta.persistence.LockModeType;
+
+public interface AccountRepository extends JpaRepository<Account, Long> { // Autoboxing will convert long(private long id in Account field) to Long 
+    boolean existsByEmail(String email);
+    
+    Optional<Account> findByEmail(String email);
+
+    // Finds account for update
+    // Locks row to prevent multiple simultaneous modifications of same account
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Account a WHERE a.id = :id")
+    Optional<Account> findByIdForUpdate(@Param("id") Long id);
 }

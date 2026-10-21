@@ -9,19 +9,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.revature.bankofcli.dto.DepositRequest;
-import com.revature.bankofcli.dto.TransactionHistoryResponse;
-import com.revature.bankofcli.dto.TransactionResponse;
-import com.revature.bankofcli.dto.TransferRequest;
-import com.revature.bankofcli.dto.WithdrawRequest;
+import com.revature.bankofcli.dto.transaction.DepositRequest;
+import com.revature.bankofcli.dto.transaction.TransactionHistoryResponse;
+import com.revature.bankofcli.dto.transaction.TransactionResponse;
+import com.revature.bankofcli.dto.transaction.TransferRequest;
+import com.revature.bankofcli.dto.transaction.WithdrawRequest;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
 public class TransactionController {
-    
-    @GetMapping("/accounts/me/transactions") //me is temporary
+
+    @GetMapping("/accounts/me/transactions") // me is temporary
     public ResponseEntity<TransactionHistoryResponse> getTransactions() {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
