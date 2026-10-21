@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public abstract class AbstractTransactionRequest {
     @NotNull(message = "Please enter an amount.")
-    @Positive(message = "Please enter a positive amount.")
+    @Positive(message = "Please enter a valid amount.")
     @Max(value = 1000000, message = "The transaction amount exceeds the maximum allowed limit of $10,000.")
     private Long amountInCents;
 
