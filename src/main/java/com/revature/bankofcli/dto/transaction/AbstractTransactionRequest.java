@@ -12,6 +12,8 @@ public abstract class AbstractTransactionRequest {
     @NotNull(message = "Account ID should not be null.")
     private Long accountId;
 
+    private String memo;
+
     public Long getAmountInCents() {
         return amountInCents;
     }
@@ -26,5 +28,13 @@ public abstract class AbstractTransactionRequest {
 
     public void setAccountId(Long accountId) {
         this.accountId = accountId;
+    }
+
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
     }
 }

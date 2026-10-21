@@ -8,6 +8,13 @@ public class TransferRequest extends AbstractTransactionRequest {
     @NotBlank(message = "Recipient account ID should not be null.")
     private Long recipientAccountId;
 
+    public TransferRequest(Long amountInCents, Long accountId, Long recipientAccountId, String memo) {
+        this.setAmountInCents(amountInCents);
+        this.setAccountId(accountId);
+        this.recipientAccountId = recipientAccountId;
+        this.setMemo(memo);
+    }
+
     public Long getRecipientAccountId() {
         return recipientAccountId;
     }
