@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Positive;
 public abstract class AbstractTransactionRequest {
     @NotNull(message = "Please enter an amount.")
     @Positive(message = "Please enter a positive amount.")
-    @Max(1000000)
+    @Max(value = 1000000, message = "The transaction amount exceeds the maximum allowed limit of $10,000.")
     private Long amountInCents;
 
     // Should be passed in by the system

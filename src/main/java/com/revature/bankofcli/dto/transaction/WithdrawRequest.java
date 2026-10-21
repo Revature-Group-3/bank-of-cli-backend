@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Positive;
 public class WithdrawRequest {
     @NotNull(message = "Please enter an amount.")
     @Positive(message = "Please enter a valid amount.")
-    @Max(1000000) // Max amount limit
+    @Max(value = 1000000, message = "The transaction amount exceeds the maximum allowed limit of $10,000.") // Max amount limit
     private Long amountInCents;
 
     public Long getAmountInCents() {
