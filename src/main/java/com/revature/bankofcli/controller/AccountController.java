@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountController {
+    // Refers to the service for registering.
+    //private final AuthService authService;
 
     private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
-    
     /*
+
     private final AccountService accountService;
-    
-    
+
     public AccountController(AccountService accountService){
         this.accountService = accountService;
     }   
