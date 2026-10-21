@@ -4,9 +4,8 @@ public class DepositRequest extends AbstractTransactionRequest {
     public DepositRequest() {
     }
 
-    public DepositRequest(Long amountInCents, Long accountId, String memo) {
+    public DepositRequest(Long amountInCents, String memo) {
         this.setAmountInCents(amountInCents);
-        this.setAccountId(accountId);
         this.setMemo(memo);
     }
 }

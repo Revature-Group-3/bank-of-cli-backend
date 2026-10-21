@@ -60,7 +60,7 @@ public class TransactionService {
      *                you now.
      */
     @Transactional
-    public Deposit deposit(DepositRequest request) {
+    public Deposit deposit(Long accountId, DepositRequest request) {
         Account account = transactionSetup(request);
 
         long amountInCents = request.getAmountInCents();
@@ -78,7 +78,7 @@ public class TransactionService {
 
     // Withdraw
     @Transactional
-    public Withdrawal withdraw(WithdrawRequest request) {
+    public Withdrawal withdraw(Long accountId, WithdrawRequest request) {
 
         Account account = transactionSetup(request);
 
@@ -109,7 +109,7 @@ public class TransactionService {
     // Transfer Transfer(Account senderAccount, Account recipientAccount,
     // OffsetDateTime timestamp, long amountInCents, String memo)
     @Transactional
-    public Transfer transfer(TransferRequest request) {
+    public Transfer transfer(Long accountId, TransferRequest request) {
 
         transactionSetup(request);
 
@@ -118,7 +118,10 @@ public class TransactionService {
 
         // Base Check
         // error code 400
-        if (request.getAccountId().equals(request.getRecipientAccountEmail())) {
+        Account senderAccount = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException("Could not find sender account."));
+
+        if (senderAccount.getEmail().equals(request.getRecipientAccountEmail())) {
             throw new SelfTransferException();
         }
 
@@ -168,7 +171,7 @@ public class TransactionService {
         // Does the basic setup validation common to all types of transactions
 
         // Load account, or fail if it doesn't exist
-        Account account = accountRepository.findById(transactionRequest.getAccountId())
+        Account account = accountRepository.findByIdForUpdate(transactionRequest.getAccountId())
                 .orElseThrow(() -> new AccountNotFoundException("Could not find account."));
 
         // Business rules
