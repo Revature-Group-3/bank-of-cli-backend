@@ -4,6 +4,19 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(  // Adds `type` property to indicate bank transaction type
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type"
+)
+@JsonSubTypes({ // Defines the values `type` can take depending on bank transaction type
+    @JsonSubTypes.Type(value = DepositRequest.class, name = "DEPOSIT"),
+    @JsonSubTypes.Type(value = WithdrawalRequest.class, name = "WITHDRAWAL"),
+    @JsonSubTypes.Type(value = TransferRequest.class, name = "TRANSFER")
+})
 public abstract class AbstractTransactionRequest {
     @NotNull(message = "Please enter an amount.")
     @Positive(message = "Please enter a valid amount.")
