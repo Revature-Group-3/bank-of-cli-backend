@@ -16,8 +16,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 public class Account {
 
     // Postgres database in AWS
-    @Id 
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Email @NotBlank 
@@ -40,7 +40,12 @@ public class Account {
     @Column (name = "balance_in_cents")
     private long balanceInCents;
 
-    protected Account(){}
+    // // For account roles
+    // @Enumerated(EnumType.STRING)
+    // @Column(name = "role", nullable = false)
+    // private Role role = Role.USER;
+  
+    protected Account() {}
 
     public Account(String email, String firstName, String lastName, String password) {
         this.email = email;
@@ -53,40 +58,57 @@ public class Account {
     public long getId() {
         return id;
     }
+
     public void setId(long id) {
         this.id = id;
     }
+
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
+
     public String getFirstName() {
         return firstName;
     }
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
+
     public String getLastName() {
         return lastName;
     }
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+    
     public String getPassword() {
         return password;
     }
+
     public void setPassword(String password) {
         this.password = password;
     }
 
-
     public long getBalanceInCents() {
         return balanceInCents;
     }
+
     public void setBalanceInCents(long balanceInCents) {
         this.balanceInCents = balanceInCents;
     }
-}
 
+    // // Role getters and setters
+    // public Role getRole() {
+    // return role;
+    // }
+
+    // public void setRole(Role role) {
+    // this.role = role;
+    // }
+}
