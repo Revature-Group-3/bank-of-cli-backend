@@ -6,20 +6,23 @@ public class TransferRequest extends AbstractTransactionRequest {
     // See AbstractTransactionRequest for amountInCents and accountId fields.
 
     @NotBlank(message = "Recipient account ID should not be null.")
-    private Long recipientAccountId;
+    private String recipientAccountEmail;
 
-    public TransferRequest(Long amountInCents, Long accountId, Long recipientAccountId, String memo) {
+    public TransferRequest(Long amountInCents, Long accountId, String recipientAccountEmail, String memo) {
         this.setAmountInCents(amountInCents);
         this.setAccountId(accountId);
-        this.recipientAccountId = recipientAccountId;
+        this.recipientAccountEmail = recipientAccountEmail;
         this.setMemo(memo);
     }
 
-    public Long getRecipientAccountId() {
-        return recipientAccountId;
+    public TransferRequest() {
     }
 
-    public void setRecipientAccountId(Long recipientAccountId) {
-        this.recipientAccountId = recipientAccountId;
+    public String getRecipientAccountEmail() {
+        return recipientAccountEmail;
+    }
+
+    public void setRecipientAccountEmail(String recipientAccountEmail) {
+        this.recipientAccountEmail = recipientAccountEmail;
     }
 }
