@@ -15,7 +15,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> { // Aut
     
     Optional<Account> findByEmail(String email);
 
-    // For finding an Account that is to be updated
+    // Finds account for update
+    // Locks row to prevent multiple simultaneous modifications of same account
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Account a WHERE a.id = :id")
     Optional<Account> findByIdForUpdate(Long id);
