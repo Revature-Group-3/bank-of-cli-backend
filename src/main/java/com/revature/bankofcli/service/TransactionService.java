@@ -118,7 +118,7 @@ public class TransactionService {
 
         // Base Check
         // error code 400
-        if (request.getAccountId().equals(request.getRecipientAccountId())) {
+        if (request.getAccountId().equals(request.getRecipientAccountEmail())) {
             throw new SelfTransferException();
         }
 
@@ -126,7 +126,7 @@ public class TransactionService {
         Account accountSender = accountRepository.findById(request.getAccountId())
                 .orElseThrow(() -> new AccountNotFoundException("Could not find sender account."));
         // Error Code 404
-        Account accountRecipient = accountRepository.findById(request.getRecipientAccountId())
+        Account accountRecipient = accountRepository.findByEmail(request.getRecipientAccountEmail())
                 .orElseThrow(() -> new AccountNotFoundException("The recipient account could not be found."));
 
         // Business logic / checks
