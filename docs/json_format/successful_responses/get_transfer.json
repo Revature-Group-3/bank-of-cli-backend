@@ -1,8 +1,0 @@
-{
-    "id": 51,
-    "senderAccountEmail": "example@email.com",
-    "recipientAccountEmail": "another.example@email.com",
-    "type": "TRANSFER",
-    "amountInCents": 51,
-    "timestamp": "2024-06-01T00:00:00Z"
-}
