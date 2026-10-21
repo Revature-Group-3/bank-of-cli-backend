@@ -8,13 +8,13 @@ public abstract class ConductTransactionRequest {
     @NotNull(message = "Please enter an amount.")
     @Positive(message = "Please enter a valid amount.")
     @Max(value = 1000000, message = "The transaction amount exceeds the maximum allowed limit of $10,000.")
-    private Long amountInCents;
+    private long amountInCents;
 
-    public Long getAmountInCents() {
+    public long getAmountInCents() {
         return amountInCents;
     }
 
-    public void setAmountInCents(Long amountInCents) {
+    public void setAmountInCents(long amountInCents) {
         this.amountInCents = amountInCents;
     }
 }
