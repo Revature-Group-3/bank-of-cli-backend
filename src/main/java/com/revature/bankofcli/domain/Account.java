@@ -20,7 +20,7 @@ public class Account {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Email @NotBlank
+    @Email @NotBlank 
     @Column (name = "email", unique = true)
     private String email;
 
@@ -36,7 +36,7 @@ public class Account {
     @Column (name = "password")
     private String password;
 
-    @PositiveOrZero @NotNull
+    @PositiveOrZero @NotNull 
     @Column (name = "balance_in_cents")
     private long balanceInCents;
 
