@@ -1,4 +1,4 @@
-package com.revature.bankofcli.dto;
+package com.revature.bankofcli.dto.transaction;
 
 import java.time.OffsetDateTime;
 import com.revature.bankofcli.domain.TransactionTypeEnum;
@@ -12,7 +12,8 @@ public class TransactionResponse {
     private long amountInCents;
     private OffsetDateTime timestamp;
 
-    public TransactionResponse(long id, String accountEmail, String senderAccountEmail, String recipientAccountEmail, TransactionTypeEnum type, long amountInCents, OffsetDateTime timestamp) {
+    public TransactionResponse(long id, String accountEmail, String senderAccountEmail, String recipientAccountEmail,
+            TransactionTypeEnum type, long amountInCents, OffsetDateTime timestamp) {
         this.id = id;
         this.accountEmail = accountEmail;
         this.senderAccountEmail = senderAccountEmail;
