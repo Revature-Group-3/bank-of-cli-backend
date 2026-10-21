@@ -13,9 +13,9 @@ import com.revature.bankofcli.domain.TransactionTypeEnum;
     property = "type"
 )
 @JsonSubTypes({ // Defines the values `type` can take depending on bank transaction type
-    // @JsonSubTypes.Type(value = RetrieveDepositResponse.class, name = "DEPOSIT"),
-    // @JsonSubTypes.Type(value = RetrieveWithdrawalRequest.class, name = "WITHDRAWAL"),
-    // @JsonSubTypes.Type(value = RetrieveTransferRequest.class, name = "TRANSFER")
+    @JsonSubTypes.Type(value = RetrieveDepositResponse.class, name = "DEPOSIT"),
+    @JsonSubTypes.Type(value = RetrieveWithdrawalRequest.class, name = "WITHDRAWAL"),
+    @JsonSubTypes.Type(value = RetrieveTransferRequest.class, name = "TRANSFER")
 })
 public abstract class RetrieveTransactionResponse {
     private long id;
