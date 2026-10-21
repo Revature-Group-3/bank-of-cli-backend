@@ -23,21 +23,11 @@ public abstract class AbstractTransactionRequest {
     @Max(value = 1000000, message = "The transaction amount exceeds the maximum allowed limit of $10,000.")
     private Long amountInCents;
 
-    private String memo;
-
     public Long getAmountInCents() {
         return amountInCents;
     }
 
     public void setAmountInCents(Long amountInCents) {
         this.amountInCents = amountInCents;
-    }
-
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo;
     }
 }
