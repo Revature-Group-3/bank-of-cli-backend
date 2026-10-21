@@ -11,7 +11,7 @@ public class AccountController {
     // Refers to the service for registering.
     //private final AuthService authService;
 
-    private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
+    private static final Logger logger =LoggerFactory.getLogger(AccountController.class);
     /*
 
     private final AccountService accountService;
