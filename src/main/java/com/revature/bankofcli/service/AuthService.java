@@ -9,6 +9,7 @@ import com.revature.bankofcli.dto.RegisterAccountRequest;
 import com.revature.bankofcli.repository.AccountRepository;
 import com.revature.bankofcli.exception.InvalidCredentialsException;
 import com.revature.bankofcli.security.TokenService;
+//import com.revature.bankofcli.domain.Role;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -50,14 +51,15 @@ public class AuthService {
         Account account = new Account(request.getEmail(), request.getFirstName(), request.getLastName(), hashedPassword,
                 0L);
 
-        // Add role stuff here
+        // Always set new account's role to USER.
+        // account.setRole(Role.USER);
 
         // Save this to the DB
         Account savedAccount = accountRepository.save(account);
 
         // Return a safe account without returning the hash.
         return new AccountResponse(savedAccount.getEmail(), savedAccount.getFirstName(), savedAccount.getLastName(),
-                OL);
+                0L);
     }
 
 }
