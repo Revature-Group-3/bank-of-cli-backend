@@ -1,4 +1,4 @@
-package com.revature.bankofcli.dto;
+package com.revature.bankofcli.dto.transaction;
 
 import java.util.List;
 
