@@ -7,9 +7,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "account")
@@ -20,7 +22,7 @@ public class Account {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Email @NotBlank
+    @Email @NotBlank 
     @Column (name = "email", unique = true)
     private String email;
 
@@ -36,7 +38,8 @@ public class Account {
     @Column (name = "password")
     private String password;
 
-    @PositiveOrZero @NotNull
+    @PositiveOrZero @NotNull 
+    @Max (1000000) // Sets the max amount in balance
     @Column (name = "balance_in_cents")
     private long balanceInCents;
 
