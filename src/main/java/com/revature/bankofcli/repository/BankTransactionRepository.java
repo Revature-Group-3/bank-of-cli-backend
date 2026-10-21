@@ -11,11 +11,13 @@ public interface BankTransactionRepository extends JpaRepository<BankTransaction
                                                                                           // long(private long id in
                                                                                           // Transaction field) to Long
 
-        // Importantly, this gets the whole row, it's not formatted yet
-        @Query("SELECT transaction FROM BankTransaction transaction " +
-                        "WHERE transaction.senderAccountId = :accountId " +
-                        "OR transaction.recipientAccountId = :accountId " +
-                        "ORDER BY transaction.timestamp DESC")
+        // Query selects all transactions that are connected to the specified account and orders them by timestamp (descending) 
+        @Query("SELECT t FROM BankTransaction t WHERE " +
+                "(TREAT(t AS Deposit).account.id = :accountId) OR " +
+                "(TREAT(t AS Withdrawal).account.id = :accountId) OR " +
+                "(TREAT(t AS Transfer).senderAccount.id = :accountId) OR " +
+                "(TREAT(t AS Transfer).recipientAccount.id = :accountId) " +
+                "ORDER BY t.timestamp DESC")
         List<BankTransaction> findTransactionHistory(@Param("accountId") Long accountId);
 
 }
