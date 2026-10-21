@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Lock;
 
 import com.revature.bankofcli.domain.Account;
@@ -19,5 +20,5 @@ public interface AccountRepository extends JpaRepository<Account, Long> { // Aut
     // Locks row to prevent multiple simultaneous modifications of same account
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Account a WHERE a.id = :id")
-    Optional<Account> findByIdForUpdate(Long id);
+    Optional<Account> findByIdForUpdate(@Param("id") Long id);
 }
