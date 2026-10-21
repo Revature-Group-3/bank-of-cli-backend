@@ -19,7 +19,7 @@ public class AuthController {
     }
     
 
-    @PostMapping 
+    @PostMapping("/login")
     public ResponseEntity<AccountResponse> signIn (@Valid @RequestBody SignInRequest request) {
 
         AccountResponse response = authService.signIn(request);
@@ -28,7 +28,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping 
+    @PostMapping("/register")
     public ResponseEntity<AccountResponse> register (@Valid @RequestBody RegisterAccountRequest request) {
             
         AccountResponse response = authService.register(request);
