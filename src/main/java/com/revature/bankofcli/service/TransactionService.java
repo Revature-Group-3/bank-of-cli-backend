@@ -69,24 +69,30 @@ public class TransactionService {
 
     // Withdraw
     @Transactional
-    public SuccessfulWithdrawalResponse withdraw(Long accountId, WithdrawMoneyRequest request) {
-
+    public SuccessfulWithdrawalResponse withdraw(long accountId, WithdrawMoneyRequest request) {
         Account account = transactionSetup(accountId, request);
 
-        long amountInCents = request.getAmountInCents();
+        // Check if amount is greater than what you currently have
+        validateSufficientFunds(account, request);
 
-        // Check if amount is greater than what you currently have.
-        // error code 400
-        if (amountInCents > account.getBalanceInCents()) {
-            throw new InsufficientFundsException();
-        }
+        // Persist withdrawal record
+        Withdrawal withdrawal = bankTransactionRepository.save(new Withdrawal(
+            account,
+            request.getAmountInCents(),
+            null
+        ));
 
         // Set new balance
-        account.setBalanceInCents(account.getBalanceInCents() - amountInCents);
+        account.setBalanceInCents(account.getBalanceInCents() - request.getAmountInCents());
 
-        // persist to transactions
-        return bankTransactionRepository.save(new Withdrawal(account, amountInCents, null));
-
+        // Successful withdrawal response
+        return new SuccessfulWithdrawalResponse(
+            withdrawal.getId(),
+            withdrawal.getAmountInCents(),
+            account.getBalanceInCents(),
+            withdrawal.getTimestamp(),
+            account.getEmail()
+        );
     }
 
     @Transactional
