@@ -12,8 +12,6 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.revature.bankofcli.dto.ApiError;
 
@@ -25,20 +23,10 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // Our own errors, each ApiException already carries its status and contract message
+    // Our own errors, each ApiException already carries its status and contract message.
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiError> handleApiException(ApiException ex) {
         return build(ex.getStatus(), ex.getMessage());
-    }
-
-    // DTO validation failures (@NotNull, @Positive, @Max, @Size...), return the annotation's message
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .findFirst()
-                .map(FieldError::getDefaultMessage)
-                .orElse("The request could not be processed.");
-        return build(HttpStatus.BAD_REQUEST, message);
     }
 
     // Everything else
