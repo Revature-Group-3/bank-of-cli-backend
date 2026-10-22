@@ -255,6 +255,9 @@ public class TransactionService {
                 // Transfer
                 else if (bankTransaction instanceof Transfer transfer)
                     { return mapTransferToRetrievalDto(transfer); }
+                // Default (we should not reach this point)
+                else
+                    { throw new IllegalArgumentException("Unknown bank transaction type: " + bankTransaction.getClass().getName()); }
             })
             .toList();
     }
