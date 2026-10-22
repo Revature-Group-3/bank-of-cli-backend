@@ -2,7 +2,6 @@ package com.revature.bankofcli.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +17,6 @@ import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
 import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
 import com.revature.bankofcli.service.TransactionService;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.security.oauth2.jwt.Jwt;
 import com.revature.bankofcli.dto.transaction.SuccessfulDepositResponse;
 import com.revature.bankofcli.dto.transaction.SuccessfulWithdrawalResponse;
@@ -56,7 +54,9 @@ public class TransactionController {
     }
 
     @PostMapping("/transfers")
-    public ResponseEntity<RetrieveTransactionResponse> transfer(@Valid @RequestBody TransferMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<SuccessfulTransferResponse> transfer(@Valid @RequestBody TransferMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
+        Long accountId = Long.valueOf(jwt.getSubject());
+        SuccessfulTransferResponse response = transactionService.transfer(accountId, request);
+        return ResponseEntity.ok(response);
     }
 }
