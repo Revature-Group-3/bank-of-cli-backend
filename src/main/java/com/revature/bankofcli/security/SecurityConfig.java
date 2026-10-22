@@ -44,9 +44,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/accounts").permitAll() // Use this as a template for new endpoints
-
+                        .requestMatchers("/api/auth/login").permitAll() 
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll() // Use this as a template for new endpoints
                         // Add new endpoints above
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));

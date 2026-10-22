@@ -1,42 +1,41 @@
 package com.revature.bankofcli.controller;
 
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.revature.bankofcli.dto.AccountResponse;
-import com.revature.bankofcli.dto.RegisterAccountRequest;
-import com.revature.bankofcli.service.AuthService;
-
-import jakarta.validation.Valid;
+import com.revature.bankofcli.service.AccountService;
 
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountController {
     // Refers to the service for registering.
-    private final AuthService authService;
+    //private final AuthService authService;
 
-    public AccountController(AuthService authService) {
-        this.authService = authService;
+    private static final Logger logger =LoggerFactory.getLogger(AccountController.class);
+    
+
+    private final AccountService accountService;
+
+    public AccountController(AccountService accountService){
+        this.accountService = accountService;
+    }   
+
+    @GetMapping("/me")
+    public ResponseEntity<AccountResponse> getAccount(@AuthenticationPrincipal Jwt jwt) {
+        Long accountId = Long.parseLong(jwt.getSubject());
+
+        AccountResponse response = accountService.getAccountById(accountId);
+        logger.info("Successfully retrieved account ID: {}", accountId);
+
+        return ResponseEntity.ok(response);
     }
 
-    // Jimmy: didn't want to touch this yet. Follow up with Boone.
-    @GetMapping("/me") // rember this is a substitute
-    public ResponseEntity<AccountResponse> getCurrentAccount() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    // Return HTTP code 201 Created with the account information.
-    @PostMapping
-    public ResponseEntity<AccountResponse> register(@Valid @RequestBody RegisterAccountRequest request) {
-        // Changed this to refer to the service of account registration.
-        AccountResponse response = authService.register(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    
 }

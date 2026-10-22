@@ -1,0 +1,27 @@
+package com.revature.bankofcli.service;
+
+import org.springframework.stereotype.Service;
+
+import com.revature.bankofcli.domain.Account;
+import com.revature.bankofcli.dto.AccountResponse;
+import com.revature.bankofcli.exception.AccountNotFoundException;
+import com.revature.bankofcli.repository.AccountRepository;
+
+@Service 
+public class AccountService {
+
+    public final AccountRepository accountRepository;
+
+    public AccountService(AccountRepository accountRepository){
+        this.accountRepository = accountRepository;
+    }
+    
+    
+    public AccountResponse getAccountById(Long accountId){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(AccountNotFoundException::new);
+        
+        return new AccountResponse(account.getEmail(), account.getFirstName(), account.getLastName(), account.getBalanceInCents());
+    }
+    
+}

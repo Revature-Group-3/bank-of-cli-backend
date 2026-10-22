@@ -50,13 +50,16 @@ public class TransactionService {
 
     /**
      * Deposit
-     * 
+     *
      * @Transactional groups the balance update and the new bank_transaction row into one unit:
      * either both happen or neither does.
      */
     @Transactional
-    public SuccessfulDepositResponse deposit(long accountId, DepositMoneyRequest request) {
-        Account account = standardSetup(accountId, request);
+    public SuccessfulDepositResponse deposit(Long accountId, DepositMoneyRequest request) {
+        Account account = transactionSetup(accountId, request);
+
+        // Set new balance
+        account.setBalanceInCents(account.getBalanceInCents() + request.getAmountInCents());
 
         // Persist deposit record
         Deposit deposit = bankTransactionRepository.save(new Deposit(
@@ -64,9 +67,6 @@ public class TransactionService {
             request.getAmountInCents(),
             null
         ));
-
-        // Set new balance
-        account.setBalanceInCents(account.getBalanceInCents() + request.getAmountInCents());
 
         // Successful deposit response
         return new SuccessfulDepositResponse(
@@ -80,11 +80,17 @@ public class TransactionService {
 
     // Withdraw
     @Transactional
-    public SuccessfulWithdrawalResponse withdraw(long accountId, WithdrawMoneyRequest request) {
-        Account account = standardSetup(accountId, request);
+    public SuccessfulWithdrawalResponse withdraw(Long accountId, WithdrawMoneyRequest request) {
+        Account account = transactionSetup(accountId, request);
 
         // Check if amount is greater than what you currently have
-        validateSufficientFunds(account, request);
+        // Error code 400
+        if (request.getAmountInCents() > account.getBalanceInCents()) {
+            throw new InsufficientFundsException();
+        }
+
+        // Set new balance
+        account.setBalanceInCents(account.getBalanceInCents() - request.getAmountInCents());
 
         // Persist withdrawal record
         Withdrawal withdrawal = bankTransactionRepository.save(new Withdrawal(
@@ -92,9 +98,6 @@ public class TransactionService {
             request.getAmountInCents(),
             null
         ));
-
-        // Set new balance
-        account.setBalanceInCents(account.getBalanceInCents() - request.getAmountInCents());
 
         // Successful withdrawal response
         return new SuccessfulWithdrawalResponse(
@@ -108,39 +111,52 @@ public class TransactionService {
 
     // Transfer
     @Transactional
-    public SuccessfulTransferResponse transfer(long accountId, TransferMoneyRequest request) {
-        List<Account> accounts = transferSetup(accountId, request);
-        Account senderAccount = accounts.get(0);
-        Account recipientAccount = accounts.get(1);
+    public SuccessfulTransferResponse transfer(Long accountId, TransferMoneyRequest request) {
+        validateAmount(request);
+        long amountInCents = request.getAmountInCents();
+
+        // Find the recipient's id without loading the account, so it can be locked below
+        // Error code 404
+        Long recipientId = accountRepository.findIdByEmail(request.getRecipientAccountEmail())
+                .orElseThrow(RecipientNotFoundException::new);
+
+        // Error code 400
+        if (recipientId.equals(accountId)) {
+            throw new SelfTransferException();
+        }
+
+        // Lock both accounts in a fixed order (lower id first) so two opposite transfers can't deadlock
+        Account first = lockAccount(Math.min(accountId, recipientId));
+        Account second = lockAccount(Math.max(accountId, recipientId));
+        Account sender = (first.getId() == accountId) ? first : second;
+        Account recipient = (sender == first) ? second : first;
 
         // Check if amount is greater than what sender currently has
-        validateSufficientFunds(senderAccount, request);
-
-        // Persist transfer record
-        Transfer transfer = bankTransactionRepository.save(new Transfer(
-            senderAccount,
-            recipientAccount,
-            request.getAmountInCents(),
-            null
-        ));
+        // Error code 400
+        if (amountInCents > sender.getBalanceInCents()) {
+            throw new InsufficientFundsException();
+        }
 
         // Set new balances
-        senderAccount.setBalanceInCents(senderAccount.getBalanceInCents() - request.getAmountInCents());
-        recipientAccount.setBalanceInCents(recipientAccount.getBalanceInCents() + request.getAmountInCents());
+        sender.setBalanceInCents(sender.getBalanceInCents() - amountInCents);
+        recipient.setBalanceInCents(recipient.getBalanceInCents() + amountInCents);
+
+        // Persist transfer record
+        Transfer transfer = bankTransactionRepository.save(new Transfer(sender, recipient, amountInCents, null));
 
         // Successful transfer response
         return new SuccessfulTransferResponse(
             transfer.getId(),
             transfer.getAmountInCents(),
-            senderAccount.getBalanceInCents(),
+            sender.getBalanceInCents(),
             transfer.getTimestamp(),
-            transfer.getSenderAccount().getEmail(),
-            transfer.getRecipientAccount().getEmail()
+            sender.getEmail(),
+            recipient.getEmail()
         );
     }
 
     @Transactional(readOnly = true)
-    public RetrieveTransactionHistoryResponse getTransactionHistory(long accountId) {
+    public RetrieveTransactionHistoryResponse getTransactionHistory(Long accountId) {
         // Should be allowed to be empty
         List<BankTransaction> pastBankTransactions = bankTransactionRepository.findTransactionHistory(accountId);
 
@@ -150,95 +166,30 @@ public class TransactionService {
 
     /*
      * HELPER METHODS
-    */
+     */
 
-    // Standard bank transaction setup:
-    // Validate general bank transaction rules and get account
-    private Account standardSetup(long accountId, ConductTransactionRequest request) {
-        validateBankTransactionRequest(request);
-        return getAccountForBankTransaction(accountId);
+    // Loads and row-locks the account, then checks the rules shared by every transaction type
+    private Account transactionSetup(Long accountId, ConductTransactionRequest request) {
+        validateAmount(request);
+        return lockAccount(accountId);
     }
 
-    // Transfer setup:
-    // Validate general bank transaction rules and get accounts while avoiding double-locking
-    // Returns list of two elements: first is sender account and second is recipient account
-    private List<Account> transferSetup(long senderAccountId, TransferMoneyRequest request) {
-        validateBankTransactionRequest(request);
-
-        // Non-locked sender account
-        // This is only used to retrieve sender account information for set-up
-        // We will retrieve this again in a locked form to start the transfer
-        Account senderAccountNonLocked = accountRepository.findById(senderAccountId)
-            .orElseThrow(AccountNotFoundException::new);
-
-        // Verify that sender and recipient emails are different 
-        if (senderAccountNonLocked.getEmail().equalsIgnoreCase(request.getRecipientAccountEmail())) {
-            throw new SelfTransferException();
-        }
-
-        // Non-locked recipient account
-        // This is only used to retrieve recipient account information for set-up
-        // We will retrieve this again in a locked form to start the transfer
-        // We throw error if recipient does not exist
-        Account recipientAccountNonLocked = accountRepository.findByEmail(request.getRecipientAccountEmail())
-            .orElseThrow(RecipientNotFoundException::new);
-
-        // Get locked accounts in ascending order of ID:
-
-        // Will refer to locked sender and recipient
-        Account senderAccount;
-        Account recipientAccount;
-
-        // Lock sender first if ID is smaller
-        if (senderAccountNonLocked.getId() < recipientAccountNonLocked.getId()) {
-            senderAccount = getAccountForBankTransaction(senderAccountNonLocked.getId());
-            recipientAccount = getAccountForBankTransaction(recipientAccountNonLocked.getId());
-        }
-
-        // Lock recipient first if ID is smaller
-        else {
-            recipientAccount = getAccountForBankTransaction(recipientAccountNonLocked.getId());
-            senderAccount = getAccountForBankTransaction(senderAccountNonLocked.getId());
-        }
-
-        // Return accounts in list
-        return List.of(senderAccount, recipientAccount);
-    }
-    
-    // Validate bank transaction request; this checks general business rules applying to all bank transaction types 
-    private void validateBankTransactionRequest(ConductTransactionRequest request) {
+    // Rules shared by every transaction type
+    private void validateAmount(ConductTransactionRequest request) {
         // Error code 400
         if (request.getAmountInCents() <= 0) {
             throw new InvalidAmountException();
         }
-
         // Error code 400
         if (request.getAmountInCents() > 1_000_000) {
             throw new AmountExceedsLimitException();
         }
     }
 
-    // Validate that account has sufficient funds for withdrawal
-    private void validateSufficientFunds(Account account, WithdrawMoneyRequest request) {
-        // Error code 400
-        if (request.getAmountInCents() > account.getBalanceInCents()) {
-            throw new InsufficientFundsException();
-        }
-    }
-
-    // Validate that sender account has sufficient funds for transfer
-    private void validateSufficientFunds(Account senderAccount, TransferMoneyRequest request) {
-        // Error code 400
-        if (request.getAmountInCents() > senderAccount.getBalanceInCents()) {
-            throw new InsufficientFundsException();
-        }
-    }
-    
-    // Loads and row-locks the specified account for bank transaction
-    // If account not found, we throw exception
-    private Account getAccountForBankTransaction(long accountId) {
+    // Loads the account with a row lock (SELECT ... FOR UPDATE) that is held until the transaction ends
+    private Account lockAccount(Long accountId) {
         return accountRepository.findByIdForUpdate(accountId)
-            .orElseThrow(AccountNotFoundException::new);
+                .orElseThrow(AccountNotFoundException::new);
     }
 
     // Maps bank transaction list to bank transaction retrieval dto list
@@ -282,7 +233,7 @@ public class TransactionService {
         );
     }
 
-    // Maps transfer to to transfer retrieval DTO
+    // Maps transfer to transfer retrieval DTO
     private RetrieveTransferResponse mapTransferToRetrievalDto(Transfer transfer) {
         return new RetrieveTransferResponse(
             transfer.getId(),

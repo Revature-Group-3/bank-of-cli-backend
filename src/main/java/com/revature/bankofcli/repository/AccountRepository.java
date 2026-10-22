@@ -21,4 +21,9 @@ public interface AccountRepository extends JpaRepository<Account, Long> { // Aut
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Account a WHERE a.id = :id")
     Optional<Account> findByIdForUpdate(@Param("id") Long id);
+
+    // Looks up only the id (no Account object is loaded), so the account can be locked afterward
+    // with findByIdForUpdate without Hibernate reusing an unlocked copy
+    @Query("SELECT a.id FROM Account a WHERE a.email = :email")
+    Optional<Long> findIdByEmail(@Param("email") String email);
 }
