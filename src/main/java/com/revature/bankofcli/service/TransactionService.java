@@ -55,16 +55,27 @@ public class TransactionService {
      * either both happen or neither does.
      */
     @Transactional
-    public SuccessfulDepositResponse deposit(Long accountId, DepositMoneyRequest request) {
+    public SuccessfulDepositResponse deposit(long accountId, DepositMoneyRequest request) {
         Account account = transactionSetup(accountId, request);
 
-        long amountInCents = request.getAmountInCents();
+        // Persist deposit record
+        Deposit deposit = bankTransactionRepository.save(new Deposit(
+            account,
+            request.getAmountInCents(),
+            null
+        ));
 
-        // Update Account's Balance
-        account.setBalanceInCents(account.getBalanceInCents() + amountInCents);
+        // Set new balance
+        account.setBalanceInCents(account.getBalanceInCents() + request.getAmountInCents());
 
-        // Save and return
-        return bankTransactionRepository.save(new Deposit(account, amountInCents, null));
+        // Successful deposit response
+        return new SuccessfulDepositResponse(
+            deposit.getId(),
+            deposit.getAmountInCents(),
+            account.getBalanceInCents(),
+            deposit.getTimestamp(),
+            account.getEmail()
+        );
     }
 
     // Withdraw
