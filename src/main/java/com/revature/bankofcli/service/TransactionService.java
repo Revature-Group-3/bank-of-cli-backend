@@ -2,10 +2,10 @@ package com.revature.bankofcli.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.revature.bankofcli.dto.transaction.DepositRequest;
-import com.revature.bankofcli.dto.transaction.WithdrawRequest;
-import com.revature.bankofcli.dto.transaction.TransferRequest;
-import com.revature.bankofcli.dto.transaction.AbstractTransactionRequest;
+import com.revature.bankofcli.dto.transaction.ConductTransactionRequest;
+import com.revature.bankofcli.dto.transaction.DepositMoneyRequest;
+import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
+import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
 
 import java.util.List;
 
@@ -14,6 +14,7 @@ import com.revature.bankofcli.domain.BankTransaction;
 import com.revature.bankofcli.domain.Deposit;
 import com.revature.bankofcli.domain.Transfer;
 import com.revature.bankofcli.domain.Withdrawal;
+
 import com.revature.bankofcli.repository.AccountRepository;
 import com.revature.bankofcli.repository.BankTransactionRepository;
 
@@ -21,6 +22,7 @@ import com.revature.bankofcli.exception.AccountNotFoundException;
 import com.revature.bankofcli.exception.AmountExceedsLimitException;
 import com.revature.bankofcli.exception.InsufficientFundsException;
 import com.revature.bankofcli.exception.InvalidAmountException;
+import com.revature.bankofcli.exception.RecipientNotFoundException;
 import com.revature.bankofcli.exception.SelfTransferException;
 
 @Service
@@ -45,118 +47,74 @@ public class TransactionService {
         this.accountRepository = accountRepository;
     }
 
-    // Deposit
+
     /**
-     * Need the @Transactional. A deposit is several database writes
-     * 1. Update the account's balance
-     * 2. Insert a row into bank_transaction
-     * 3. Insert a row into deposit
-     * 
-     * @Transactional groups them into one unit: either all of them happen
-     *                or none do. If step 3 fails, balance change from step 1 is
-     *                rolled back.
-     * 
-     *                Similar to part 1 of BANKOFCLI, its just Spring does it for
-     *                you now.
+     * @Transactional groups the balance update and the new bank_transaction row into one unit:
+     * either both happen or neither does.
      */
+    // Deposit
     @Transactional
-    public Deposit deposit(Long accountId, DepositRequest request) {
-        Account account = transactionSetup(request);
+    public Deposit deposit(Long accountId, DepositMoneyRequest request) {
+        Account account = transactionSetup(accountId, request);
 
         long amountInCents = request.getAmountInCents();
-        String memo = request.getMemo();
 
         // Update Account's Balance
         account.setBalanceInCents(account.getBalanceInCents() + amountInCents);
 
-        // Create a transaction (Deposit)
-        Deposit deposit = new Deposit(account, amountInCents, memo);
-
         // Save and return
-        return bankTransactionRepository.save(deposit);
+        return bankTransactionRepository.save(new Deposit(account, amountInCents, null));
     }
 
     // Withdraw
     @Transactional
-    public Withdrawal withdraw(Long accountId, WithdrawRequest request) {
+    public Withdrawal withdraw(Long accountId, WithdrawMoneyRequest request) {
 
-        Account account = transactionSetup(request);
+        Account account = transactionSetup(accountId, request);
 
         long amountInCents = request.getAmountInCents();
-        String memo = request.getMemo();
 
         // Check if amount is greater than what you currently have.
         // error code 400
         if (amountInCents > account.getBalanceInCents()) {
-            throw new InsufficientFundsException(
-                    "Insufficient funds. The withdrawal amount exceeds your available balance.");
-
+            throw new InsufficientFundsException();
         }
 
         // Set new balance
         account.setBalanceInCents(account.getBalanceInCents() - amountInCents);
 
-        // Create withdrawal
-        // Syntax: (Account account, OffsetDateTime timestamp, long amountInCents,
-        // String memo )
-        Withdrawal withdraw = new Withdrawal(account, amountInCents, memo);
-
         // persist to transactions
-        return bankTransactionRepository.save(withdraw);
+        return bankTransactionRepository.save(new Withdrawal(account, amountInCents, null));
 
     }
 
-    // Transfer Transfer(Account senderAccount, Account recipientAccount,
-    // OffsetDateTime timestamp, long amountInCents, String memo)
     @Transactional
-    public Transfer transfer(Long accountId, TransferRequest request) {
-
-        transactionSetup(request);
+    public Transfer transfer(Long accountId, TransferMoneyRequest request) {
+        Account sender = transactionSetup(accountId, request);
 
         long amountInCents = request.getAmountInCents();
-        String memo = request.getMemo();
 
-        // Base Check
-        // error code 400
-        Account senderAccount = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException("Could not find sender account."));
-
-        if (senderAccount.getEmail().equals(request.getRecipientAccountEmail())) {
+        if (sender.getEmail().equalsIgnoreCase(request.getRecipientAccountEmail())) {
             throw new SelfTransferException();
         }
 
-        // Gather accounts : from and to
-        Account accountSender = accountRepository.findById(request.getAccountId())
-                .orElseThrow(() -> new AccountNotFoundException("Could not find sender account."));
         // Error Code 404
-        Account accountRecipient = accountRepository.findByEmail(request.getRecipientAccountEmail())
-                .orElseThrow(() -> new AccountNotFoundException("The recipient account could not be found."));
+        Account recipient = accountRepository.findByEmail(request.getRecipientAccountEmail())
+                .orElseThrow(RecipientNotFoundException::new);
 
         // Business logic / checks
-
         // Additional Checks
         // error code 400
-        if (amountInCents <= 0) {
-            throw new InvalidAmountException();
+        if (amountInCents > sender.getBalanceInCents()) {
+            throw new InsufficientFundsException();
         }
-        // error code 400
-        if (amountInCents > 1_000_000) {
-            throw new AmountExceedsLimitException("The transfer amount exceeds the maximum allowed limit of $10,000.");
-        }
-        // error code 400
-        if (amountInCents > accountSender.getBalanceInCents()) {
-            throw new InsufficientFundsException(
-                    "Insufficient funds. The transfer amount exceeds your available balance.");
-        }
-        // Set new balance
-        accountSender.setBalanceInCents(accountSender.getBalanceInCents() - amountInCents);
-        accountRecipient.setBalanceInCents(accountRecipient.getBalanceInCents() + amountInCents);
 
-        // Create transfer
-        Transfer transfer = new Transfer(accountSender, accountRecipient, amountInCents, memo);
+        // Set new balance
+        sender.setBalanceInCents(sender.getBalanceInCents() - amountInCents);
+        recipient.setBalanceInCents(recipient.getBalanceInCents() + amountInCents);
 
         // Persist to database
-        return bankTransactionRepository.save(transfer);
+        return bankTransactionRepository.save(new Transfer(sender, recipient, amountInCents, null));
 
     }
 
@@ -167,21 +125,23 @@ public class TransactionService {
     }
 
     // Helper functions
-    private Account transactionSetup(AbstractTransactionRequest transactionRequest) {
+    // Loads and row-locks the logged-in account and checks the rules shared by every transaction type
+    private Account transactionSetup(Long accountId, ConductTransactionRequest request) {
         // Does the basic setup validation common to all types of transactions
 
         // Load account, or fail if it doesn't exist
-        Account account = accountRepository.findByIdForUpdate(transactionRequest.getAccountId())
-                .orElseThrow(() -> new AccountNotFoundException("Could not find account."));
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(AccountNotFoundException::new);
 
         // Business rules
         // Error code 400
-        if (transactionRequest.getAmountInCents() <= 0) {
+        if (request.getAmountInCents() <= 0) {
             throw new InvalidAmountException();
         }
+
         // Error code 400
-        if (transactionRequest.getAmountInCents() > 1_000_000) {
-            throw new AmountExceedsLimitException("The amount exceeds the maximum allowed limit of $10,000.");
+        if (request.getAmountInCents() > 1_000_000) {
+            throw new AmountExceedsLimitException();
         }
 
         return account;
