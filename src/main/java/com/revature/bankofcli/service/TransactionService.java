@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.revature.bankofcli.dto.transaction.ConductTransactionRequest;
 import com.revature.bankofcli.dto.transaction.DepositMoneyRequest;
+import com.revature.bankofcli.dto.transaction.RetrieveTransactionHistoryResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveTransactionResponse;
 import com.revature.bankofcli.dto.transaction.SuccessfulDepositResponse;
 import com.revature.bankofcli.dto.transaction.SuccessfulTransferResponse;
 import com.revature.bankofcli.dto.transaction.SuccessfulWithdrawalResponse;
@@ -115,11 +117,12 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<RetrieveTransactionResponse> getTransactionHistory(long accountId) {
+    public RetrieveTransactionHistoryResponse getTransactionHistory(long accountId) {
         // Should be allowed to be empty
-        List<BankTransaction> pastTransactions = bankTransactionRepository.findTransactionHistory(accountId);
+        List<BankTransaction> pastBankTransactions = bankTransactionRepository.findTransactionHistory(accountId);
 
-        return pastTransactions.stream().map(null)
+        return pastBankTransactions.stream()
+            .map(bankTransaction -> RetrieveTransactionResponse);
     }
 
     /*
