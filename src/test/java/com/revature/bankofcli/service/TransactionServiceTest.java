@@ -30,6 +30,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+  import com.revature.bankofcli.dto.transaction.SuccessfulDepositResponse;
+  import com.revature.bankofcli.dto.transaction.SuccessfulWithdrawalResponse;
+  import com.revature.bankofcli.dto.transaction.SuccessfulTransferResponse;
+
 // Unit tests for TransactionService. The repositories are mocks, so no database is needed
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
@@ -43,7 +47,7 @@ class TransactionServiceTest {
     @InjectMocks
     private TransactionService transactionService;
 
-    // ---------- helpers ----------
+    // helpers 
 
     private Account account(long id, String email, long balanceInCents) {
         Account account = new Account(email, "First", "Last", "hashedPassword");
@@ -77,7 +81,7 @@ class TransactionServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
-    // ---------- deposit ----------
+    // deposit 
 
     @Test
     void depositAddsToBalanceAndSavesDeposit() {
@@ -85,11 +89,11 @@ class TransactionServiceTest {
         when(accountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(hal));
         saveReturnsItsArgument();
 
-        Deposit deposit = transactionService.deposit(1L, depositRequest(500));
+        SuccessfulDepositResponse deposit = transactionService.deposit(1L, depositRequest(500));
 
         assertEquals(1500, hal.getBalanceInCents());
         assertEquals(500, deposit.getAmountInCents());
-        assertSame(hal, deposit.getAccount());
+        assertEquals("hal@email.com", deposit.getAccountEmail());
         verify(accountRepository).findByIdForUpdate(1L); // the locking lookup is used
     }
 
@@ -130,7 +134,7 @@ class TransactionServiceTest {
         verify(bankTransactionRepository, never()).save(any(BankTransaction.class));
     }
 
-    // ---------- withdraw ----------
+    // withdraw 
 
     @Test
     void withdrawSubtractsFromBalanceAndSavesWithdrawal() {
@@ -138,11 +142,11 @@ class TransactionServiceTest {
         when(accountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(hal));
         saveReturnsItsArgument();
 
-        Withdrawal withdrawal = transactionService.withdraw(1L, withdrawRequest(400));
+        SuccessfulWithdrawalResponse withdrawal = transactionService.withdraw(1L, withdrawRequest(400));
 
         assertEquals(600, hal.getBalanceInCents());
         assertEquals(400, withdrawal.getAmountInCents());
-        assertSame(hal, withdrawal.getAccount());
+        assertEquals("hal@email.com", withdrawal.getAccountEmail());
     }
 
     @Test
@@ -176,7 +180,7 @@ class TransactionServiceTest {
         verifyNoInteractions(accountRepository, bankTransactionRepository);
     }
 
-    // ---------- transfer ----------
+    // transfer 
 
     @Test
     void transferMovesMoneyBetweenAccounts() {
@@ -187,12 +191,12 @@ class TransactionServiceTest {
         when(accountRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(jo));
         saveReturnsItsArgument();
 
-        Transfer transfer = transactionService.transfer(1L, transferRequest("jo@email.com", 400));
+        SuccessfulTransferResponse transfer = transactionService.transfer(1L, transferRequest("jo@email.com", 400));
 
         assertEquals(600, hal.getBalanceInCents());
         assertEquals(400, jo.getBalanceInCents());
-        assertSame(hal, transfer.getSenderAccount());
-        assertSame(jo, transfer.getRecipientAccount());
+        assertEquals("hal@email.com", transfer.getSenderAccountEmail());
+        assertEquals("jo@email.com", transfer.getRecipientAccountEmail());
     }
 
     @Test
@@ -205,7 +209,7 @@ class TransactionServiceTest {
         when(accountRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(recipient));
         saveReturnsItsArgument();
 
-        Transfer transfer = transactionService.transfer(5L, transferRequest("recipient@email.com", 300));
+        SuccessfulTransferResponse transfer = transactionService.transfer(5L, transferRequest("recipient@email.com", 300));
 
         InOrder lockOrder = inOrder(accountRepository);
         lockOrder.verify(accountRepository).findByIdForUpdate(2L);
@@ -214,7 +218,7 @@ class TransactionServiceTest {
         // and the money still goes the right way
         assertEquals(700, sender.getBalanceInCents());
         assertEquals(300, recipient.getBalanceInCents());
-        assertSame(sender, transfer.getSenderAccount());
+        assertEquals("sender@email.com", transfer.getSenderAccountEmail());
     }
 
     @Test

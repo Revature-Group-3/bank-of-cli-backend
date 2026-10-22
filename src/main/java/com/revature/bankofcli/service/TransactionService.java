@@ -4,6 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.revature.bankofcli.dto.transaction.ConductTransactionRequest;
 import com.revature.bankofcli.dto.transaction.DepositMoneyRequest;
+import com.revature.bankofcli.dto.transaction.RetrieveDepositResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveTransactionHistoryResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveTransactionResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveTransferResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveWithdrawalResponse;
+import com.revature.bankofcli.dto.transaction.SuccessfulDepositResponse;
+import com.revature.bankofcli.dto.transaction.SuccessfulTransferResponse;
+import com.revature.bankofcli.dto.transaction.SuccessfulWithdrawalResponse;
 import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
 import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
 
@@ -42,54 +50,77 @@ public class TransactionService {
 
     /**
      * Deposit
-     * 
+     *
      * @Transactional groups the balance update and the new bank_transaction row into one unit:
      * either both happen or neither does.
      */
     @Transactional
-    public Deposit deposit(Long accountId, DepositMoneyRequest request) {
+    public SuccessfulDepositResponse deposit(Long accountId, DepositMoneyRequest request) {
         Account account = transactionSetup(accountId, request);
 
-        long amountInCents = request.getAmountInCents();
+        // Set new balance
+        account.setBalanceInCents(account.getBalanceInCents() + request.getAmountInCents());
 
-        // Update Account's Balance
-        account.setBalanceInCents(account.getBalanceInCents() + amountInCents);
+        // Persist deposit record
+        Deposit deposit = bankTransactionRepository.save(new Deposit(
+            account,
+            request.getAmountInCents(),
+            null
+        ));
 
-        // Save and return
-        return bankTransactionRepository.save(new Deposit(account, amountInCents, null));
+        // Successful deposit response
+        return new SuccessfulDepositResponse(
+            deposit.getId(),
+            deposit.getAmountInCents(),
+            account.getBalanceInCents(),
+            deposit.getTimestamp(),
+            account.getEmail()
+        );
     }
 
     // Withdraw
     @Transactional
-    public Withdrawal withdraw(Long accountId, WithdrawMoneyRequest request) {
-
+    public SuccessfulWithdrawalResponse withdraw(Long accountId, WithdrawMoneyRequest request) {
         Account account = transactionSetup(accountId, request);
 
-        long amountInCents = request.getAmountInCents();
-
-        // Check if amount is greater than what you currently have.
-        // error code 400
-        if (amountInCents > account.getBalanceInCents()) {
+        // Check if amount is greater than what you currently have
+        // Error code 400
+        if (request.getAmountInCents() > account.getBalanceInCents()) {
             throw new InsufficientFundsException();
         }
 
         // Set new balance
-        account.setBalanceInCents(account.getBalanceInCents() - amountInCents);
+        account.setBalanceInCents(account.getBalanceInCents() - request.getAmountInCents());
 
-        // persist to transactions
-        return bankTransactionRepository.save(new Withdrawal(account, amountInCents, null));
+        // Persist withdrawal record
+        Withdrawal withdrawal = bankTransactionRepository.save(new Withdrawal(
+            account,
+            request.getAmountInCents(),
+            null
+        ));
 
+        // Successful withdrawal response
+        return new SuccessfulWithdrawalResponse(
+            withdrawal.getId(),
+            withdrawal.getAmountInCents(),
+            account.getBalanceInCents(),
+            withdrawal.getTimestamp(),
+            account.getEmail()
+        );
     }
 
+    // Transfer
     @Transactional
-    public Transfer transfer(Long accountId, TransferMoneyRequest request) {
+    public SuccessfulTransferResponse transfer(Long accountId, TransferMoneyRequest request) {
         validateAmount(request);
         long amountInCents = request.getAmountInCents();
 
         // Find the recipient's id without loading the account, so it can be locked below
+        // Error code 404
         Long recipientId = accountRepository.findIdByEmail(request.getRecipientAccountEmail())
                 .orElseThrow(RecipientNotFoundException::new);
 
+        // Error code 400
         if (recipientId.equals(accountId)) {
             throw new SelfTransferException();
         }
@@ -100,32 +131,42 @@ public class TransactionService {
         Account sender = (first.getId() == accountId) ? first : second;
         Account recipient = (sender == first) ? second : first;
 
-
-        // Business logic / checks
-        // Additional Checks
-        // error code 400
+        // Check if amount is greater than what sender currently has
+        // Error code 400
         if (amountInCents > sender.getBalanceInCents()) {
             throw new InsufficientFundsException();
         }
 
-        // Set new balance
+        // Set new balances
         sender.setBalanceInCents(sender.getBalanceInCents() - amountInCents);
         recipient.setBalanceInCents(recipient.getBalanceInCents() + amountInCents);
 
-        // Persist to database
-        return bankTransactionRepository.save(new Transfer(sender, recipient, amountInCents, null));
+        // Persist transfer record
+        Transfer transfer = bankTransactionRepository.save(new Transfer(sender, recipient, amountInCents, null));
 
+        // Successful transfer response
+        return new SuccessfulTransferResponse(
+            transfer.getId(),
+            transfer.getAmountInCents(),
+            sender.getBalanceInCents(),
+            transfer.getTimestamp(),
+            sender.getEmail(),
+            recipient.getEmail()
+        );
     }
 
     @Transactional(readOnly = true)
-    public List<BankTransaction> getTransactionHistory(Long accountId) {
-        // Should be allowed to be null
-        return bankTransactionRepository.findTransactionHistory(accountId);
+    public RetrieveTransactionHistoryResponse getTransactionHistory(Long accountId) {
+        // Should be allowed to be empty
+        List<BankTransaction> pastBankTransactions = bankTransactionRepository.findTransactionHistory(accountId);
+
+        // Map to retrieval DTOs
+        return new RetrieveTransactionHistoryResponse(mapBankTransactionsToRetrievalDtos(pastBankTransactions));
     }
 
     /*
      * HELPER METHODS
-    */
+     */
 
     // Loads and row-locks the account, then checks the rules shared by every transaction type
     private Account transactionSetup(Long accountId, ConductTransactionRequest request) {
@@ -135,9 +176,11 @@ public class TransactionService {
 
     // Rules shared by every transaction type
     private void validateAmount(ConductTransactionRequest request) {
+        // Error code 400
         if (request.getAmountInCents() <= 0) {
             throw new InvalidAmountException();
         }
+        // Error code 400
         if (request.getAmountInCents() > 1_000_000) {
             throw new AmountExceedsLimitException();
         }
@@ -147,5 +190,57 @@ public class TransactionService {
     private Account lockAccount(Long accountId) {
         return accountRepository.findByIdForUpdate(accountId)
                 .orElseThrow(AccountNotFoundException::new);
+    }
+
+    // Maps bank transaction list to bank transaction retrieval dto list
+    private List<RetrieveTransactionResponse> mapBankTransactionsToRetrievalDtos(List<BankTransaction> bankTransactions) {
+        return bankTransactions.stream()
+            // Map each bank transaction type to its corresponding retrieval DTO:
+            .map(bankTransaction -> {
+                // Deposit
+                if (bankTransaction instanceof Deposit deposit)
+                    { return mapDepositToRetrievalDto(deposit); }
+                // Withdrawal
+                else if (bankTransaction instanceof Withdrawal withdrawal)
+                    { return mapWithdrawalToRetrievalDto(withdrawal); }
+                // Transfer
+                else if (bankTransaction instanceof Transfer transfer)
+                    { return mapTransferToRetrievalDto(transfer); }
+                // Default (we should not reach this point)
+                else
+                    { throw new IllegalArgumentException("Unknown bank transaction type: " + bankTransaction.getClass().getName()); }
+            })
+            .toList();
+    }
+
+    // Maps deposit to deposit retrieval DTO
+    private RetrieveDepositResponse mapDepositToRetrievalDto(Deposit deposit) {
+        return new RetrieveDepositResponse(
+            deposit.getId(),
+            deposit.getAmountInCents(),
+            deposit.getTimestamp(),
+            deposit.getAccount().getEmail()
+        );
+    }
+
+    // Maps withdrawal to withdrawal retrieval DTO
+    private RetrieveWithdrawalResponse mapWithdrawalToRetrievalDto(Withdrawal withdrawal) {
+        return new RetrieveWithdrawalResponse(
+            withdrawal.getId(),
+            withdrawal.getAmountInCents(),
+            withdrawal.getTimestamp(),
+            withdrawal.getAccount().getEmail()
+        );
+    }
+
+    // Maps transfer to transfer retrieval DTO
+    private RetrieveTransferResponse mapTransferToRetrievalDto(Transfer transfer) {
+        return new RetrieveTransferResponse(
+            transfer.getId(),
+            transfer.getAmountInCents(),
+            transfer.getTimestamp(),
+            transfer.getSenderAccount().getEmail(),
+            transfer.getRecipientAccount().getEmail()
+        );
     }
 }
