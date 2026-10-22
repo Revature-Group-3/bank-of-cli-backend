@@ -14,12 +14,19 @@ import com.revature.bankofcli.dto.transaction.RetrieveTransactionHistoryResponse
 import com.revature.bankofcli.dto.transaction.RetrieveTransactionResponse;
 import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
 import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
+import com.revature.bankofcli.service.TransactionService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
 public class TransactionController {
+
+    private final TransactionService transactionService;
+
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
 
     @GetMapping("/accounts/me/transactions") // me is temporary
     public ResponseEntity<RetrieveTransactionHistoryResponse> getTransactions() {
@@ -37,7 +44,7 @@ public class TransactionController {
     }
 
     @PostMapping("/transfers")
-    ResponseEntity<RetrieveTransactionResponse> transfer(@Valid @RequestBody TransferMoneyRequest request) {
+    public ResponseEntity<RetrieveTransactionResponse> transfer(@Valid @RequestBody TransferMoneyRequest request) {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 }

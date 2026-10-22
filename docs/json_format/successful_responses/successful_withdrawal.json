@@ -1,0 +1,8 @@
+{
+    "id": 52,
+    "accountEmail": "example@email.com",
+    "type": "WITHDRAWAL",
+    "amountInCents": 51,
+    "newBalanceInCents": 51,
+    "timestamp": "2024-06-02T01:00:00Z"
+}
