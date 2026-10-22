@@ -1,8 +1,11 @@
 package com.revature.bankofcli.exception;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.springframework.http.MediaType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +13,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.revature.bankofcli.dto.RegisterAccountRequest;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 class GlobalExceptionHandlerTest {
 
@@ -24,6 +35,12 @@ class GlobalExceptionHandlerTest {
 
         @GetMapping("/test/unexpected")
         void unexpected() { throw new IllegalStateException("something broke"); }
+
+        @PostMapping("/test/register")
+        void register (@Valid @RequestBody RegisterAccountRequest request) {
+            //TODO: process POST request
+        }
+        
     }
 
     private MockMvc mockMvc;
@@ -58,5 +75,25 @@ class GlobalExceptionHandlerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.message").value("An internal error occurred. Please try again later."));
+    }
+
+    @Test 
+    void invalidRegisterRequestReturns400WithContractMessage() throws Exception{
+        String body = """
+            {
+            "email" : "not-an-email",
+            "firstName":"Scott",
+            "lastName" : "Pilgrim",  
+            "password" : "abc"
+            }    
+                    """;
+
+        mockMvc.perform(post("/test/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("Please provide a valid email address."));
+
     }
 }
