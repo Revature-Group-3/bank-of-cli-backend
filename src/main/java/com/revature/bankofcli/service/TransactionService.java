@@ -83,17 +83,23 @@ public class TransactionService {
 
     @Transactional
     public Transfer transfer(Long accountId, TransferMoneyRequest request) {
-        Account sender = transactionSetup(accountId, request);
-
+        validateAmount(request);
         long amountInCents = request.getAmountInCents();
 
-        if (sender.getEmail().equalsIgnoreCase(request.getRecipientAccountEmail())) {
+        // Find the recipient's id without loading the account, so it can be locked below
+        Long recipientId = accountRepository.findIdByEmail(request.getRecipientAccountEmail())
+                .orElseThrow(RecipientNotFoundException::new);
+
+        if (recipientId.equals(accountId)) {
             throw new SelfTransferException();
         }
 
-        // Error Code 404
-        Account recipient = accountRepository.findByEmail(request.getRecipientAccountEmail())
-                .orElseThrow(RecipientNotFoundException::new);
+        // Lock both accounts in a fixed order (lower id first) so two opposite transfers can't deadlock
+        Account first = lockAccount(Math.min(accountId, recipientId));
+        Account second = lockAccount(Math.max(accountId, recipientId));
+        Account sender = (first.getId() == accountId) ? first : second;
+        Account recipient = (sender == first) ? second : first;
+
 
         // Business logic / checks
         // Additional Checks
@@ -120,26 +126,26 @@ public class TransactionService {
     /*
      * HELPER METHODS
     */
-    
-    // Loads and row-locks the specified account and checks the rules shared by every transaction type
+
+    // Loads and row-locks the account, then checks the rules shared by every transaction type
     private Account transactionSetup(Long accountId, ConductTransactionRequest request) {
-        // Does the basic setup validation common to all types of transactions
+        validateAmount(request);
+        return lockAccount(accountId);
+    }
 
-        // Load account, or fail if it doesn't exist
-        Account account = accountRepository.findByIdForUpdate(accountId)
-                .orElseThrow(AccountNotFoundException::new);
-
-        // Business rules
-        // Error code 400
+    // Rules shared by every transaction type
+    private void validateAmount(ConductTransactionRequest request) {
         if (request.getAmountInCents() <= 0) {
             throw new InvalidAmountException();
         }
-
-        // Error code 400
         if (request.getAmountInCents() > 1_000_000) {
             throw new AmountExceedsLimitException();
         }
+    }
 
-        return account;
+    // Loads the account with a row lock (SELECT ... FOR UPDATE) that is held until the transaction ends
+    private Account lockAccount(Long accountId) {
+        return accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(AccountNotFoundException::new);
     }
 }
