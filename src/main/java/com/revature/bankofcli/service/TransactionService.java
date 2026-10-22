@@ -131,16 +131,9 @@ public class TransactionService {
     /*
      * HELPER METHODS
     */
-    
-    // Loads and row-locks the specified account and checks the rules shared by every transaction type
-    private Account transactionSetup(long accountId, ConductTransactionRequest request) {
-        // Does the basic setup validation common to all types of transactions
 
-        // Load account, or fail if it doesn't exist
-        Account account = accountRepository.findByIdForUpdate(accountId)
-                .orElseThrow(AccountNotFoundException::new);
-
-        // Business rules
+    // Validate bank transaction request; this checks general business rules applying to all bank transaction types 
+    private void validateBankTransactionRequest(ConductTransactionRequest request) {
         // Error code 400
         if (request.getAmountInCents() <= 0) {
             throw new InvalidAmountException();
@@ -150,8 +143,29 @@ public class TransactionService {
         if (request.getAmountInCents() > 1_000_000) {
             throw new AmountExceedsLimitException();
         }
+    }
 
-        return account;
+    // Validate that account has sufficient funds for withdrawal
+    private void validateSufficientFunds(Account account, WithdrawMoneyRequest request) {
+        // Error code 400
+        if (request.getAmountInCents() > account.getBalanceInCents()) {
+            throw new InsufficientFundsException();
+        }
+    }
+
+    // Validate that sender account has sufficient funds for transfer
+    private void validateSufficientFunds(Account senderAccount, TransferMoneyRequest request) {
+        // Error code 400
+        if (request.getAmountInCents() > senderAccount.getBalanceInCents()) {
+            throw new InsufficientFundsException();
+        }
+    }
+
+    // Loads and row-locks the specified account for bank transaction
+    // If account not found, we throw exception
+    private Account getAccountForBankTransaction(long accountId) {
+        return accountRepository.findByIdForUpdate(accountId)
+            .orElseThrow(AccountNotFoundException::new);
     }
 
     // Maps bank transaction list to bank transaction retrieval dto list
