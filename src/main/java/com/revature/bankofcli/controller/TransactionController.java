@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.revature.bankofcli.dto.transaction.DepositRequest;
-import com.revature.bankofcli.dto.transaction.TransactionHistoryResponse;
-import com.revature.bankofcli.dto.transaction.TransactionResponse;
-import com.revature.bankofcli.dto.transaction.TransferRequest;
-import com.revature.bankofcli.dto.transaction.WithdrawRequest;
+import com.revature.bankofcli.dto.transaction.DepositMoneyRequest;
+import com.revature.bankofcli.dto.transaction.RetrieveTransactionHistoryResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveTransactionResponse;
+import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
+import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
 
 import jakarta.validation.Valid;
 
@@ -22,22 +22,22 @@ import jakarta.validation.Valid;
 public class TransactionController {
 
     @GetMapping("/accounts/me/transactions") // me is temporary
-    public ResponseEntity<TransactionHistoryResponse> getTransactions() {
+    public ResponseEntity<RetrieveTransactionHistoryResponse> getTransactions() {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @PostMapping("/accounts/me/deposits")
-    public ResponseEntity<TransactionResponse> deposit(@Valid @RequestBody DepositRequest request) {
+    public ResponseEntity<RetrieveTransactionResponse> deposit(@Valid @RequestBody DepositMoneyRequest request) {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @PostMapping("/accounts/me/withdraw")
-    public ResponseEntity<TransactionResponse> withdraw(@Valid @RequestBody WithdrawRequest request) {
+    public ResponseEntity<RetrieveTransactionResponse> withdraw(@Valid @RequestBody WithdrawMoneyRequest request) {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @PostMapping("/transfers")
-    public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody TransferRequest request) {
+    public ResponseEntity<RetrieveTransactionResponse> transfer(@Valid @RequestBody TransferMoneyRequest request) {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 }
