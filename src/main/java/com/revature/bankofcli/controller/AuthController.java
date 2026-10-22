@@ -20,7 +20,7 @@ public class AuthController {
     
 
     @PostMapping("/login")
-    public ResponseEntity<AccountResponse> signIn (@Valid @RequestBody SignInRequest request) {
+    public ResponseEntity<AccountResponse> login (@Valid @RequestBody SignInRequest request) {
 
         AccountResponse response = authService.signIn(request);
         logger.info("Account registered successfully. Account ID: {}", response.getAccountId());
