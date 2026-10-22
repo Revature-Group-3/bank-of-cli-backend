@@ -1,6 +1,5 @@
 package com.revature.bankofcli.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,11 +7,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.revature.bankofcli.dto.transaction.DepositMoneyRequest;
 import com.revature.bankofcli.dto.transaction.RetrieveTransactionHistoryResponse;
-import com.revature.bankofcli.dto.transaction.RetrieveTransactionResponse;
 import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
 import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
 import com.revature.bankofcli.service.TransactionService;
@@ -32,7 +29,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @GetMapping("/account/transactions") // me is temporary
+    @GetMapping("/account/transactions")
     public ResponseEntity<RetrieveTransactionHistoryResponse> getTransactions(@AuthenticationPrincipal Jwt jwt) {
         Long accountId = Long.valueOf(jwt.getSubject());
         RetrieveTransactionHistoryResponse response = transactionService.getTransactionHistory(accountId);
