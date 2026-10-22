@@ -157,11 +157,15 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public RetrieveTransactionHistoryResponse getTransactionHistory(Long accountId) {
+        // Get logged-in account
+        Account loggedInAccount = accountRepository.findById(accountId)
+            .orElseThrow(AccountNotFoundException::new);
+        
         // Should be allowed to be empty
         List<BankTransaction> pastBankTransactions = bankTransactionRepository.findTransactionHistory(accountId);
 
         // Map to retrieval DTOs
-        return new RetrieveTransactionHistoryResponse(mapBankTransactionsToRetrievalDtos(pastBankTransactions));
+        return new RetrieveTransactionHistoryResponse(mapBankTransactionsToRetrievalDtos(pastBankTransactions, loggedInAccount));
     }
 
     /*
@@ -193,7 +197,7 @@ public class TransactionService {
     }
 
     // Maps bank transaction list to bank transaction retrieval dto list
-    private List<RetrieveTransactionResponse> mapBankTransactionsToRetrievalDtos(List<BankTransaction> bankTransactions) {
+    private List<RetrieveTransactionResponse> mapBankTransactionsToRetrievalDtos(List<BankTransaction> bankTransactions, Account loggedInAccount) {
         return bankTransactions.stream()
             // Map each bank transaction type to its corresponding retrieval DTO:
             .map(bankTransaction -> {
@@ -205,7 +209,7 @@ public class TransactionService {
                     { return mapWithdrawalToRetrievalDto(withdrawal); }
                 // Transfer
                 else if (bankTransaction instanceof Transfer transfer)
-                    { return mapTransferToRetrievalDto(transfer); }
+                    { return mapTransferToRetrievalDto(transfer, loggedInAccount); }
                 // Default (we should not reach this point)
                 else
                     { throw new IllegalArgumentException("Unknown bank transaction type: " + bankTransaction.getClass().getName()); }
@@ -234,13 +238,14 @@ public class TransactionService {
     }
 
     // Maps transfer to transfer retrieval DTO
-    private RetrieveTransferResponse mapTransferToRetrievalDto(Transfer transfer) {
+    private RetrieveTransferResponse mapTransferToRetrievalDto(Transfer transfer, Account loggedInAccount) {
         return new RetrieveTransferResponse(
             transfer.getId(),
             transfer.getAmountInCents(),
             transfer.getTimestamp(),
             transfer.getSenderAccount().getEmail(),
-            transfer.getRecipientAccount().getEmail()
+            transfer.getRecipientAccount().getEmail(),
+            loggedInAccount.getEmail()
         );
     }
 }
