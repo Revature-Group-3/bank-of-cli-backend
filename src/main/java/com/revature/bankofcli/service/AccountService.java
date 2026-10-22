@@ -18,8 +18,8 @@ public class AccountService {
     
     
     public AccountResponse getAccountById(Long accountId){
-        Account account = accountRepository.findById(accountId).orElseThrow(
-            () -> new AccountNotFoundException("Account not found with ID: " + accountId)); 
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(AccountNotFoundException::new);
         
         return new AccountResponse(account.getEmail(), account.getFirstName(), account.getLastName(), account.getBalanceInCents());
     }
