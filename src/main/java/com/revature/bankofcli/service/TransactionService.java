@@ -27,32 +27,25 @@ import com.revature.bankofcli.exception.SelfTransferException;
 
 @Service
 public class TransactionService {
-
-    /**
-     * Transaction uses the repository, no need fo "implements".
-     * 
-     * 
-     * Wouldn't call the BankTransaction because its an abstract class.
-     * Wouldn't call each type either.
-     * 
-     * What you need is to inject repositories.
-     * 
-     */
+    // Repositories
     private final BankTransactionRepository bankTransactionRepository;
     private final AccountRepository accountRepository;
 
-    public TransactionService(BankTransactionRepository bankTransactionRepository,
-            AccountRepository accountRepository) {
+    // Dependency injection for repositories
+    public TransactionService(
+        BankTransactionRepository bankTransactionRepository,
+        AccountRepository accountRepository
+    ) {
         this.bankTransactionRepository = bankTransactionRepository;
         this.accountRepository = accountRepository;
     }
 
-
     /**
+     * Deposit
+     * 
      * @Transactional groups the balance update and the new bank_transaction row into one unit:
      * either both happen or neither does.
      */
-    // Deposit
     @Transactional
     public Deposit deposit(Long accountId, DepositMoneyRequest request) {
         Account account = transactionSetup(accountId, request);
@@ -124,8 +117,11 @@ public class TransactionService {
         return bankTransactionRepository.findTransactionHistory(accountId);
     }
 
-    // Helper functions
-    // Loads and row-locks the logged-in account and checks the rules shared by every transaction type
+    /*
+     * HELPER METHODS
+    */
+    
+    // Loads and row-locks the specified account and checks the rules shared by every transaction type
     private Account transactionSetup(Long accountId, ConductTransactionRequest request) {
         // Does the basic setup validation common to all types of transactions
 
@@ -146,5 +142,4 @@ public class TransactionService {
 
         return account;
     }
-
 }
