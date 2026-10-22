@@ -37,7 +37,7 @@ public class AccountController {
 
     // Return HTTP code 201 Created with the account information.
     @PostMapping("/accounts")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterAccountRequest request) {
+    public ResponseEntity<AccountResponse> register(@Valid @RequestBody RegisterAccountRequest request) {
         var response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
