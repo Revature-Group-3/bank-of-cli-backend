@@ -1,0 +1,8 @@
+{
+    "id": 53,
+    "accountEmail": "example@email.com",
+    "type": "DEPOSIT",
+    "amountInCents": 51,
+    "newBalanceInCents": 102,
+    "timestamp": "2024-06-03T03:10:00Z"
+}
