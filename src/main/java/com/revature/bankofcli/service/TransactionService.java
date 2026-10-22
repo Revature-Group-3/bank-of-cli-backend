@@ -132,6 +132,13 @@ public class TransactionService {
      * HELPER METHODS
     */
 
+    // General bank transaction setup:
+    // Validate general bank transaction rules and get account
+    private Account transactionSetup(long accountId, ConductTransactionRequest request) {
+        validateBankTransactionRequest(request);
+        return getAccountForBankTransaction(accountId);
+    }
+
     // Validate bank transaction request; this checks general business rules applying to all bank transaction types 
     private void validateBankTransactionRequest(ConductTransactionRequest request) {
         // Error code 400
