@@ -5,7 +5,6 @@ import java.time.OffsetDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.revature.bankofcli.domain.TransactionTypeEnum;
 
 @JsonTypeInfo(  // Adds `type` property to indicate bank transaction type
     use = JsonTypeInfo.Id.NAME,
@@ -14,8 +13,8 @@ import com.revature.bankofcli.domain.TransactionTypeEnum;
 )
 @JsonSubTypes({ // Defines the values `type` can take depending on bank transaction type
     @JsonSubTypes.Type(value = RetrieveDepositResponse.class, name = "DEPOSIT"),
-    @JsonSubTypes.Type(value = RetrieveWithdrawalRequest.class, name = "WITHDRAWAL"),
-    @JsonSubTypes.Type(value = RetrieveTransferRequest.class, name = "TRANSFER")
+    @JsonSubTypes.Type(value = RetrieveWithdrawalResponse.class, name = "WITHDRAWAL"),
+    @JsonSubTypes.Type(value = RetrieveTransferResponse.class, name = "TRANSFER")
 })
 public abstract class RetrieveTransactionResponse {
     private long id;
