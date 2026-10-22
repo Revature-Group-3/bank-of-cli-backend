@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.revature.bankofcli.dto.transaction.ConductTransactionRequest;
 import com.revature.bankofcli.dto.transaction.DepositMoneyRequest;
+import com.revature.bankofcli.dto.transaction.RetrieveDepositResponse;
 import com.revature.bankofcli.dto.transaction.RetrieveTransactionHistoryResponse;
 import com.revature.bankofcli.dto.transaction.RetrieveTransactionResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveTransferResponse;
+import com.revature.bankofcli.dto.transaction.RetrieveWithdrawalResponse;
 import com.revature.bankofcli.dto.transaction.SuccessfulDepositResponse;
 import com.revature.bankofcli.dto.transaction.SuccessfulTransferResponse;
 import com.revature.bankofcli.dto.transaction.SuccessfulWithdrawalResponse;
@@ -121,8 +124,8 @@ public class TransactionService {
         // Should be allowed to be empty
         List<BankTransaction> pastBankTransactions = bankTransactionRepository.findTransactionHistory(accountId);
 
-        return pastBankTransactions.stream()
-            .map(bankTransaction -> RetrieveTransactionResponse);
+        // Map to retrieval DTOs
+        return new RetrieveTransactionHistoryResponse(mapBankTransactionsToRetrievalDtos(pastBankTransactions));
     }
 
     /*
@@ -149,5 +152,54 @@ public class TransactionService {
         }
 
         return account;
+    }
+
+    // Maps bank transaction list to bank transaction retrieval dto list
+    private List<RetrieveTransactionResponse> mapBankTransactionsToRetrievalDtos(List<BankTransaction> bankTransactions) {
+        return bankTransactions.stream()
+            // Map each bank transaction type to its corresponding retrieval DTO:
+            .map(bankTransaction -> {
+                // Deposit
+                if (bankTransaction instanceof Deposit deposit)
+                    { return mapDepositToRetrievalDto(deposit); }
+                // Withdrawal
+                else if (bankTransaction instanceof Withdrawal withdrawal)
+                    { return mapWithdrawalToRetrievalDto(withdrawal); }
+                // Transfer
+                else if (bankTransaction instanceof Transfer transfer)
+                    { return mapTransferToRetrievalDto(transfer); }
+            })
+            .toList();
+    }
+
+    // Maps deposit to deposit retrieval DTO
+    private RetrieveDepositResponse mapDepositToRetrievalDto(Deposit deposit) {
+        return new RetrieveDepositResponse(
+            deposit.getId(),
+            deposit.getAmountInCents(),
+            deposit.getTimestamp(),
+            deposit.getAccount().getEmail()
+        );
+    }
+
+    // Maps withdrawal to withdrawal retrieval DTO
+    private RetrieveWithdrawalResponse mapWithdrawalToRetrievalDto(Withdrawal withdrawal) {
+        return new RetrieveWithdrawalResponse(
+            withdrawal.getId(),
+            withdrawal.getAmountInCents(),
+            withdrawal.getTimestamp(),
+            withdrawal.getAccount().getEmail()
+        );
+    }
+
+    // Maps transfer to to transfer retrieval DTO
+    private RetrieveTransferResponse mapTransferToRetrievalDto(Transfer transfer) {
+        return new RetrieveTransferResponse(
+            transfer.getId(),
+            transfer.getAmountInCents(),
+            transfer.getTimestamp(),
+            transfer.getSenderAccount().getEmail(),
+            transfer.getRecipientAccount().getEmail()
+        );
     }
 }
