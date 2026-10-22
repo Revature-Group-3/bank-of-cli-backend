@@ -9,3 +9,4 @@ Notes on JSON attribute data types and values:
 - Emails are represented as *case-insensitive* strings that follow proper email format.
 - The transaction `type` attribute is a String that can have only values of `"DEPOSIT"`, `"WITHDRAWAL"`, or `"TRANSFER"`.
 - The `timestamp` attribute, present in transaction and the unsuccessful responses, is a String containing a formatted timestamp (e.g. `"2024-06-01T00:00:00Z"`).
+- The transaction `direction` attribute is specific to transfers retrieved from the user's bank transaction history, and can only have values of `"INCOMING"` or `"OUTGOING"`.

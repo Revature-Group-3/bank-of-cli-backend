@@ -20,7 +20,8 @@
             "recipientAccountEmail": "another.example@email.com",
             "type": "TRANSFER",
             "amountInCents": 51,
-            "timestamp": "2024-06-01T05:12:00Z"
+            "timestamp": "2024-06-01T05:12:00Z",
+            "direction": "OUTGOING"
         }
     ]
 }
