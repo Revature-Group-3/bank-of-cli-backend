@@ -32,28 +32,28 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @GetMapping("/accounts/me/transactions") // me is temporary
+    @GetMapping("/account/transactions") // me is temporary
     public ResponseEntity<RetrieveTransactionHistoryResponse> getTransactions(@AuthenticationPrincipal Jwt jwt) {
         Long accountId = Long.valueOf(jwt.getSubject());
         RetrieveTransactionHistoryResponse response = transactionService.getTransactionHistory(accountId);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/accounts/me/deposits")
+    @PostMapping("/account/deposit")
     public ResponseEntity<SuccessfulDepositResponse> deposit(@Valid @RequestBody DepositMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
         Long accountId = Long.valueOf(jwt.getSubject());
         SuccessfulDepositResponse response = transactionService.deposit(accountId, request);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/accounts/me/withdraw")
+    @PostMapping("/account/withdraw")
     public ResponseEntity<SuccessfulWithdrawalResponse> withdraw(@Valid @RequestBody WithdrawMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
         Long accountId = Long.valueOf(jwt.getSubject());
         SuccessfulWithdrawalResponse response = transactionService.withdraw(accountId, request);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/transfers")
+    @PostMapping("account/transfer")
     public ResponseEntity<SuccessfulTransferResponse> transfer(@Valid @RequestBody TransferMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
         Long accountId = Long.valueOf(jwt.getSubject());
         SuccessfulTransferResponse response = transactionService.transfer(accountId, request);
