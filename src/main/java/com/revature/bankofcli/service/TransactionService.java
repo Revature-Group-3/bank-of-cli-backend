@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.revature.bankofcli.dto.transaction.ConductTransactionRequest;
 import com.revature.bankofcli.dto.transaction.DepositMoneyRequest;
+import com.revature.bankofcli.dto.transaction.SuccessfulDepositResponse;
+import com.revature.bankofcli.dto.transaction.SuccessfulTransferResponse;
+import com.revature.bankofcli.dto.transaction.SuccessfulWithdrawalResponse;
 import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
 import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
 
@@ -47,7 +50,7 @@ public class TransactionService {
      * either both happen or neither does.
      */
     @Transactional
-    public Deposit deposit(Long accountId, DepositMoneyRequest request) {
+    public SuccessfulDepositResponse deposit(Long accountId, DepositMoneyRequest request) {
         Account account = transactionSetup(accountId, request);
 
         long amountInCents = request.getAmountInCents();
@@ -61,7 +64,7 @@ public class TransactionService {
 
     // Withdraw
     @Transactional
-    public Withdrawal withdraw(Long accountId, WithdrawMoneyRequest request) {
+    public SuccessfulWithdrawalResponse withdraw(Long accountId, WithdrawMoneyRequest request) {
 
         Account account = transactionSetup(accountId, request);
 
@@ -82,7 +85,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public Transfer transfer(Long accountId, TransferMoneyRequest request) {
+    public SuccessfulTransferResponse transfer(Long accountId, TransferMoneyRequest request) {
         Account sender = transactionSetup(accountId, request);
 
         long amountInCents = request.getAmountInCents();
@@ -112,9 +115,11 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<BankTransaction> getTransactionHistory(Long accountId) {
-        // Should be allowed to be null
-        return bankTransactionRepository.findTransactionHistory(accountId);
+    public List<RetrieveTransactionResponse> getTransactionHistory(long accountId) {
+        // Should be allowed to be empty
+        List<BankTransaction> pastTransactions = bankTransactionRepository.findTransactionHistory(accountId);
+
+        return pastTransactions.stream().map(null)
     }
 
     /*
@@ -122,7 +127,7 @@ public class TransactionService {
     */
     
     // Loads and row-locks the specified account and checks the rules shared by every transaction type
-    private Account transactionSetup(Long accountId, ConductTransactionRequest request) {
+    private Account transactionSetup(long accountId, ConductTransactionRequest request) {
         // Does the basic setup validation common to all types of transactions
 
         // Load account, or fail if it doesn't exist
