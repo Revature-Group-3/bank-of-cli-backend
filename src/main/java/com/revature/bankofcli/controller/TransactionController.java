@@ -2,6 +2,8 @@ package com.revature.bankofcli.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +17,12 @@ import com.revature.bankofcli.dto.transaction.RetrieveTransactionResponse;
 import com.revature.bankofcli.dto.transaction.TransferMoneyRequest;
 import com.revature.bankofcli.dto.transaction.WithdrawMoneyRequest;
 import com.revature.bankofcli.service.TransactionService;
-
 import jakarta.validation.Valid;
+import java.util.List;
+import org.springframework.security.oauth2.jwt.Jwt;
+import com.revature.bankofcli.dto.transaction.SuccessfulDepositResponse;
+import com.revature.bankofcli.dto.transaction.SuccessfulWithdrawalResponse;
+import com.revature.bankofcli.dto.transaction.SuccessfulTransferResponse;
 
 @RestController
 @RequestMapping("/api")
@@ -29,22 +35,28 @@ public class TransactionController {
     }
 
     @GetMapping("/accounts/me/transactions") // me is temporary
-    public ResponseEntity<RetrieveTransactionHistoryResponse> getTransactions() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<RetrieveTransactionHistoryResponse> getTransactions(@AuthenticationPrincipal Jwt jwt) {
+        Long accountId = Long.valueOf(jwt.getSubject());
+        RetrieveTransactionHistoryResponse response = transactionService.getTransactionHistory(accountId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/accounts/me/deposits")
-    public ResponseEntity<RetrieveTransactionResponse> deposit(@Valid @RequestBody DepositMoneyRequest request) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<SuccessfulDepositResponse> deposit(@Valid @RequestBody DepositMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
+        Long accountId = Long.valueOf(jwt.getSubject());
+        SuccessfulDepositResponse response = transactionService.deposit(accountId, request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/accounts/me/withdraw")
-    public ResponseEntity<RetrieveTransactionResponse> withdraw(@Valid @RequestBody WithdrawMoneyRequest request) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<SuccessfulWithdrawalResponse> withdraw(@Valid @RequestBody WithdrawMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
+        Long accountId = Long.valueOf(jwt.getSubject());
+        SuccessfulWithdrawalResponse response = transactionService.withdraw(accountId, request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/transfers")
-    public ResponseEntity<RetrieveTransactionResponse> transfer(@Valid @RequestBody TransferMoneyRequest request) {
+    public ResponseEntity<RetrieveTransactionResponse> transfer(@Valid @RequestBody TransferMoneyRequest request, @AuthenticationPrincipal Jwt jwt) {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 }
