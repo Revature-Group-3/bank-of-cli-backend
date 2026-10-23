@@ -1,6 +1,6 @@
 package com.revature.bankofcli.dto.transaction;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 public class SuccessfulTransferResponse extends SuccessfulTransactionResponse {
     private String senderAccountEmail;
@@ -8,7 +8,7 @@ public class SuccessfulTransferResponse extends SuccessfulTransactionResponse {
 
     public SuccessfulTransferResponse(
         long id, long amountInCents, long newBalanceInCents,
-        OffsetDateTime timestamp,
+        Instant timestamp,
         String senderAccountEmail, String recipientAccountEmail
     ) {
         super(id, amountInCents, newBalanceInCents, timestamp);

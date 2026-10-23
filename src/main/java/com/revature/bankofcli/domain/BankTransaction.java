@@ -1,5 +1,6 @@
 package com.revature.bankofcli.domain;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -51,7 +52,7 @@ public abstract class BankTransaction {
     // Timestamp initialized at instant of creation, not updateable
     @CreatedDate @NotNull
     @Column (name = "timestamp", updatable = false)
-    private OffsetDateTime timestamp;
+    private Instant timestamp;
 
     @Positive @NotNull
     @Column (name = "amount_in_cents")
@@ -74,10 +75,10 @@ public abstract class BankTransaction {
     public void setId(long id) {
         this.id = id;
     }
-    public OffsetDateTime getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
-    public void setTimestamp(OffsetDateTime timestamp) {
+    public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
     public long getAmountInCents() {

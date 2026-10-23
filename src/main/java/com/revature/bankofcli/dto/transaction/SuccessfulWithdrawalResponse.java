@@ -1,13 +1,13 @@
 package com.revature.bankofcli.dto.transaction;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 public class SuccessfulWithdrawalResponse extends SuccessfulTransactionResponse {
     private String accountEmail;
 
     public SuccessfulWithdrawalResponse(
         long id, long amountInCents, long newBalanceInCents,
-        OffsetDateTime timestamp,
+        Instant timestamp,
         String accountEmail
     ) {
         super(id, amountInCents, newBalanceInCents, timestamp);
