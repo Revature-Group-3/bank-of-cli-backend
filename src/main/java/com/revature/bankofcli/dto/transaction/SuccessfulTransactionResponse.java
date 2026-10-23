@@ -1,6 +1,6 @@
 package com.revature.bankofcli.dto.transaction;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -26,12 +26,12 @@ public abstract class SuccessfulTransactionResponse {
         pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", 
         timezone = "UTC"
     )
-    private OffsetDateTime timestamp;
+    private Instant timestamp;
 
     public SuccessfulTransactionResponse(
         long id,
         long amountInCents, long newBalanceInCents,
-        OffsetDateTime timestamp
+        Instant timestamp
     ) {
         this.id = id;
         this.amountInCents = amountInCents;
@@ -51,7 +51,7 @@ public abstract class SuccessfulTransactionResponse {
         return newBalanceInCents;
     }
 
-    public OffsetDateTime getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 }

@@ -1,6 +1,6 @@
 package com.revature.bankofcli.dto.transaction;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 public class RetrieveTransferResponse extends RetrieveTransactionResponse {
     private String senderAccountEmail;
@@ -8,7 +8,7 @@ public class RetrieveTransferResponse extends RetrieveTransactionResponse {
     private String direction;
 
     public RetrieveTransferResponse(
-        long id, long amountInCents, OffsetDateTime timestamp,
+        long id, long amountInCents, Instant timestamp,
         String senderAccountEmail, String recipientAccountEmail,
         String loggedInAccountEmail
     ) {
